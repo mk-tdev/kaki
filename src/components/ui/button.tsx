@@ -12,9 +12,9 @@ const styles: Record<ButtonVariant, string> = {
 };
 
 export function Button({ className, variant = "primary", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
-  return <button className={cn("inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-bold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50", styles[variant], className)} {...props} />;
+  return <button className={cn("inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-bold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50", styles[variant], className)} {...props} />;
 }
 
 export function ButtonLink({ href, children, className, variant = "primary" }: { href: string; children: ReactNode; className?: string; variant?: ButtonVariant }) {
-  return <Link href={href} className={cn("inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-bold transition-all duration-200", styles[variant], className)}>{children}</Link>;
+  return <Link href={href} className={cn("inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-bold transition-all duration-200", styles[variant], className)}>{children}</Link>;
 }

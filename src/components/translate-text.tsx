@@ -27,8 +27,8 @@ export function TranslateText({text,language,onUse,disabled=false}:{text:string;
   const current=result?.source===text&&result.language===chosen?result:null;
   return <div className="mt-3 text-ink">
     {!language?<Select label="Translate into" value={target} onChange={setTarget} options={languageOptions} disabled={busy}/>:null}
-    <button type="button" disabled={busy||disabled||!text.trim()} onClick={()=>void translate()} className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-full border border-purple/15 bg-paper px-4 text-xs font-bold text-purple disabled:opacity-50"><Languages className="size-4"/>{busy?"Translating…":`Translate to ${chosen}`}</button>
-    {current?<div className="mt-2 rounded-2xl border border-purple/15 bg-paper p-3 text-sm leading-6"><p className="whitespace-pre-wrap break-words">{current.text}</p><p className="mt-2 text-[10px] text-muted">OpenAI translation · check names and meeting details</p>{onUse?<button type="button" disabled={disabled} onClick={()=>onUse(current.text)} className="mt-2 min-h-11 rounded-full bg-purple px-4 text-xs font-bold text-white">Use this translation</button>:null}</div>:null}
+    <button type="button" disabled={busy||disabled||!text.trim()} onClick={()=>void translate()} className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-xl border border-purple/15 bg-paper px-4 text-xs font-bold text-purple disabled:opacity-50"><Languages className="size-4"/>{busy?"Translating…":`Translate to ${chosen}`}</button>
+    {current?<div className="mt-2 rounded-2xl border border-purple/15 bg-paper p-3 text-sm leading-6"><p className="whitespace-pre-wrap break-words">{current.text}</p><p className="mt-2 text-[10px] text-muted">OpenAI translation · check names and meeting details</p>{onUse?<button type="button" disabled={disabled} onClick={()=>onUse(current.text)} className="mt-2 min-h-11 rounded-xl bg-purple px-4 text-xs font-bold text-white">Use this translation</button>:null}</div>:null}
     {error?<p role="alert" className="mt-2 text-xs text-coral">{error}</p>:null}
   </div>;
 }

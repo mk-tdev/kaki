@@ -28,7 +28,7 @@ export function MeetingSettings({ location, onLocation, minutes, onMinutes, disa
   }, [open]);
   function close() { setOpen(false); trigger.current?.focus(); }
 
-  return <div className="mt-6 space-y-5 rounded-[24px] border border-purple/10 bg-purple/5 p-4 sm:p-5">
+  return <div className="mt-6 space-y-5 rounded-2xl border border-purple/10 bg-purple/5 p-4 sm:p-5">
     <label className="block text-sm font-black" htmlFor={`${id}-location`}>Where shall we meet?</label>
     <div className="relative !mt-2"><MapPin className="pointer-events-none absolute left-4 top-4 size-5 text-purple" /><input id={`${id}-location`} value={location} onChange={event => onLocation(event.target.value)} disabled={disabled} minLength={3} maxLength={160} aria-describedby={`${id}-location-hint`} className="min-h-14 w-full rounded-2xl border border-purple/15 bg-white py-3 pl-12 pr-4 text-sm font-bold text-ink outline-none focus:border-purple focus:ring-4 focus:ring-purple/10" placeholder="Choose a public meeting point" /></div>
     <p id={`${id}-location-hint`} className="!mt-2 text-xs leading-5 text-muted">Pek Kio is the default. You can choose another public place—please don’t enter a home address.</p>
@@ -37,7 +37,7 @@ export function MeetingSettings({ location, onLocation, minutes, onMinutes, disa
       <button ref={trigger} type="button" disabled={disabled} aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-times`} aria-labelledby={`${id}-label ${id}-selected`} onClick={() => setOpen(value => !value)} onKeyDown={event => { if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setOpen(true); } }} className="flex min-h-16 w-full items-center gap-3 rounded-2xl border border-purple/15 bg-white px-4 text-left shadow-sm outline-none focus-visible:ring-4 focus-visible:ring-purple/15">
         <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-purple/10 text-purple"><Clock3 className="size-4" /></span><span className="min-w-0 flex-1"><span id={`${id}-selected`} className="block text-sm font-black">{selected.label}</span><span className="block text-xs text-muted">{selected.hint}</span></span><ChevronDown className={`size-4 text-purple transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && !disabled ? <div ref={list} id={`${id}-times`} role="listbox" aria-labelledby={`${id}-label`} className="absolute inset-x-0 top-full z-30 mt-2 rounded-[22px] border border-purple/15 bg-paper p-2 shadow-[0_16px_45px_#211d3526]" onKeyDown={event => {
+      {open && !disabled ? <div ref={list} id={`${id}-times`} role="listbox" aria-labelledby={`${id}-label`} className="absolute inset-x-0 top-full z-30 mt-2 rounded-2xl border border-purple/15 bg-paper p-2 shadow-[0_16px_45px_#211d3526]" onKeyDown={event => {
         if (event.key === "Escape") { event.preventDefault(); close(); return; }
         if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
         event.preventDefault();

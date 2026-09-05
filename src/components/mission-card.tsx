@@ -17,7 +17,7 @@ const statusLabels: Record<Mission["status"], string> = {
 
 export function MissionCard({ mission, compact = false, href }: { mission: Mission; compact?: boolean; href?: string }) {
   return (
-    <Link href={href ?? `/missions/${mission.id}`} className="paper-card group block rounded-[28px] p-5 transition duration-200 hover:-translate-y-1 hover:border-purple/25 hover:shadow-[0_22px_60px_rgba(48,39,83,.13)]">
+    <Link href={href ?? `/missions/${mission.id}`} className="paper-card group block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-purple/25 hover:shadow-[0_22px_60px_rgba(48,39,83,.13)]">
       <div className="flex items-start gap-3">
         <CategoryIcon category={mission.category} />
         <div className="min-w-0 flex-1">
