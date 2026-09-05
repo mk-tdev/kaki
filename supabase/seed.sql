@@ -1,0 +1,3 @@
+-- Production data is created through Supabase Auth and the KAKI onboarding flow.
+-- Keeping this seed intentionally empty prevents fake residents or contact data
+-- from being copied into the live community database during resets.
