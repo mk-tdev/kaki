@@ -17,14 +17,14 @@ export default function LandingPage() {
     <div className="min-h-screen overflow-hidden">
       <header className="relative z-20 mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
         <Logo />
-        <nav className="hidden items-center gap-8 text-sm font-bold text-muted md:flex" aria-label="Landing navigation">
+        <nav className="hidden items-center gap-6 text-sm font-bold text-muted lg:flex" aria-label="Landing navigation">
           <a href="#how" className="hover:text-purple">How it works</a>
           <a href="#impact" className="hover:text-purple">Our impact</a>
           <a href="#safety" className="hover:text-purple">Trust & safety</a>
           <Link href="/ai-use" className="hover:text-purple">AI use</Link>
           <Link href="/share" className="hover:text-purple">Share</Link>
         </nav>
-        <ButtonLink href="/home" variant="secondary" className="min-h-11 px-4">Open KAKI <ArrowRight className="size-4" /></ButtonLink>
+        <ButtonLink href="/home" className="group shrink-0 gap-3 border border-white/20 bg-gradient-to-br from-purple to-purple-dark py-2 pl-4 pr-2 shadow-[0_6px_0_#382681,0_12px_24px_#6d55d930] hover:shadow-[0_3px_0_#382681,0_8px_18px_#6d55d930] motion-safe:hover:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-purple"><span>Let’s KAKI</span><span className="grid size-8 shrink-0 place-items-center rounded-lg bg-sun text-ink"><ArrowRight className="size-4 transition-transform motion-safe:group-hover:translate-x-0.5" /></span></ButtonLink>
       </header>
 
       <main>

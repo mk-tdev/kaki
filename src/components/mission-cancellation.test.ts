@@ -19,6 +19,21 @@ beforeEach(()=>{
 });
 afterEach(async()=>{await act(()=>root.unmount());container.remove();vi.unstubAllGlobals();});
 
+it("keeps the helper flow in shrinkable columns after accepting a mission",async()=>{
+  const mission:Mission={...demoMissions[0],helper:undefined,status:"open"};
+  const accept=vi.fn(async()=>{mission.helper=profiles[1];mission.status="matched";root.render(createElement(MissionDetail,{missionId:mission.id}));});
+  state.value={profile:profiles[1],missions:[mission],acceptMission:accept};
+  await act(()=>root.render(createElement(MissionDetail,{missionId:mission.id})));
+  const button=Array.from(container.querySelectorAll("button")).find(button=>button.textContent?.includes("I’ve got this!"))!;
+  await act(()=>button.click());
+  expect(accept).toHaveBeenCalledWith(mission.id);
+  expect(container.textContent).toContain("Waiting for both check-ins");
+  const aside=container.querySelector("aside")!;
+  expect(aside.className).toContain("min-w-0");
+  expect(aside.parentElement?.className).toContain("grid-cols-1");
+  expect(container.querySelectorAll("[data-person-id]")).toHaveLength(2);
+});
+
 for(const role of ["requester","helper"] as const) it(`shows cancellation for the ${role} and clears active journey after success`,async()=>{
   const mission:Mission={...demoMissions[0],helper:profiles[1],status:"matched"};
   const cancel=vi.fn(async()=>{mission.status="cancelled";root.render(createElement(MissionDetail,{missionId:mission.id}));});
