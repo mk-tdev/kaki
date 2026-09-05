@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { requireIdentity } from "@/lib/auth/server";
+import { query, transaction } from "@/lib/db/query";
 import type { MissionDraft } from "@/lib/ai/schemas";
 import type { Mission, Profile } from "@/types/kaki";
 
@@ -15,52 +16,37 @@ function mapMission(row: DbMission): Mission {
   return { id: row.id, title: row.title, originalRequest: row.original_request, category: row.category, status: row.status, requester: mapProfile(row.requester), helper: row.helper ? mapProfile(row.helper, 1) : undefined, language: row.language, durationMinutes: row.duration_minutes, location: row.location_label, scheduledAt: row.scheduled_at, summary: row.summary, guide: row.guide, accessibilityNotes: row.accessibility_notes ?? undefined, safetyLevel: row.safety_level, createdAt: row.created_at };
 }
 
-async function authenticatedClient() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
-  if (error || !userId) throw new Error("Unauthorized");
-  return { supabase, userId };
-}
-
-const missionSelect = "id,title,original_request,category,status,language,duration_minutes,location_label,scheduled_at,summary,guide,accessibility_notes,safety_level,created_at,requester:profiles!missions_requester_id_fkey(id,full_name,role,age_band,spoken_languages,skills,bio,verified_at),helper:profiles!missions_helper_id_fkey(id,full_name,role,age_band,spoken_languages,skills,bio,verified_at)";
+const missionSelect = `select m.*, row_to_json(r) as requester, row_to_json(h) as helper
+ from public.missions m join (select id,full_name,role,age_band,spoken_languages,skills,bio,verified_at from public.profiles) r on r.id=m.requester_id
+ left join (select id,full_name,role,age_band,spoken_languages,skills,bio,verified_at from public.profiles) h on h.id=m.helper_id`;
 
 export async function listMissions() {
-  const { supabase } = await authenticatedClient();
-  const { data, error } = await supabase.from("missions").select(missionSelect).order("scheduled_at", { ascending: true });
-  if (error) throw error;
-  return (data as unknown as DbMission[]).map(mapMission);
+  await requireIdentity();
+  return (await query<DbMission>(`${missionSelect} order by m.scheduled_at`)).map(mapMission);
 }
-
 export async function createMission(input: Omit<MissionDraft, "safetyNote"> & { scheduledAt: string }) {
-  const { supabase, userId } = await authenticatedClient();
-  const { data, error } = await supabase.from("missions").insert({ requester_id: userId, title: input.title, original_request: input.originalRequest, summary: input.summary, category: input.category, status: input.safetyLevel === "review" ? "flagged" : "open", language: input.language, duration_minutes: input.durationMinutes, location_label: input.location, scheduled_at: input.scheduledAt, guide: input.guide, safety_level: input.safetyLevel, ai_model: process.env.OPENAI_MODEL ?? "local-rules" }).select(missionSelect).single();
-  if (error) throw error;
-  return mapMission(data as unknown as DbMission);
+  const identity = await requireIdentity();
+  return transaction(async client => {
+    const result = await client.query<{id:string}>(`insert into public.missions
+      (requester_id,title,original_request,summary,category,status,language,duration_minutes,location_label,scheduled_at,guide,safety_level,ai_model)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) returning id`,
+      [identity.sub,input.title,input.originalRequest,input.summary,input.category,input.safetyLevel === "review" ? "flagged" : "open",input.language,input.durationMinutes,input.location,input.scheduledAt,JSON.stringify(input.guide),input.safetyLevel,process.env.OPENAI_MODEL ?? "local-rules"]);
+    const mission = await client.query<DbMission>(`${missionSelect} where m.id=$1`, [result.rows[0].id]);
+    return mapMission(mission.rows[0]);
+  });
 }
-
 export async function updateMission(id: string, action: "claim" | "start" | "complete" | "cancel", story?: string, consentToShare = false) {
-  const { supabase, userId } = await authenticatedClient();
-  if (action === "cancel") {
-    const { data, error } = await supabase.from("missions").update({ status: "cancelled", cancelled_at: new Date().toISOString() }).eq("id", id).in("status", ["draft","open","flagged","matched","in_progress"]).or(`requester_id.eq.${userId},helper_id.eq.${userId}`).select("id").maybeSingle();
-    if (error) throw error;
-    if (!data) throw new Error("This request has changed or you are not a participant. Refresh and try again.");
-  } else if (action === "claim") {
-    const { data, error } = await supabase.from("missions").update({ helper_id: userId, status: "matched" }).eq("id", id).eq("status", "open").neq("requester_id", userId).select("id").maybeSingle();
-    if (error) throw error;
-    if (!data) throw new Error("This mission is no longer available to claim.");
-  } else if (action === "start") {
-    const { data, error } = await supabase.from("missions").update({ status: "in_progress" }).eq("id", id).eq("helper_id", userId).eq("status", "matched").select("id").maybeSingle();
-    if (error) throw error;
-    if (!data) throw new Error("Only the assigned Kaki can start a matched mission.");
-  } else {
-    // Save only the helper's own reflection/consent. The database derives joint
-    // consent and creates the Bloom atomically with the completed transition.
-    const { error: presenceError } = await supabase.from("mission_presence").update({ reflection: story || "", consent_to_share: consentToShare }).eq("mission_id", id).eq("user_id", userId);
-    if (presenceError) throw presenceError;
-    const completedAt = new Date().toISOString();
-    const { data: mission, error } = await supabase.from("missions").update({ status: "completed", completed_at: completedAt }).eq("id", id).eq("helper_id", userId).eq("status", "in_progress").select("id,title,category,requester_id,helper_id").maybeSingle();
-    if (error) throw error;
-    if (!mission) throw new Error("Only the assigned Kaki can complete a mission in progress.");
-  }
+  const { sub } = await requireIdentity();
+  await transaction(async client => {
+    let sql: string;
+    if (action === "cancel") sql = `update public.missions set status='cancelled',cancelled_at=now() where id=$1 and (requester_id=$2 or helper_id=$2) and status in ('draft','open','flagged','matched','in_progress') returning id`;
+    else if (action === "claim") sql = `update public.missions set helper_id=$2,status='matched' where id=$1 and status='open' and requester_id<>$2 returning id`;
+    else if (action === "start") sql = `update public.missions set status='in_progress' where id=$1 and helper_id=$2 and status='matched' returning id`;
+    else {
+      await client.query(`update public.mission_presence set reflection=$3,consent_to_share=$4 where mission_id=$1 and user_id=$2`, [id,sub,story || "",consentToShare]);
+      sql = `update public.missions set status='completed',completed_at=now() where id=$1 and helper_id=$2 and status='in_progress' returning id`;
+    }
+    const result = await client.query(sql,[id,sub]);
+    if (!result.rowCount) throw new Error("This request has changed or you cannot perform this action. Refresh and try again.");
+  });
 }

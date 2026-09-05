@@ -1,9 +1,6 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
-
+import { query } from "@/lib/db/query";
 export async function guestModeEnabled() {
-  const supabase = await createClient();
-  const { data } = await supabase.from("demo_settings").select("guest_enabled").eq("id", true).maybeSingle();
-  // Fail closed until the reviewed cloud migration is applied.
-  return data?.guest_enabled === true;
+  const rows = await query<{guest_enabled:boolean}>("select guest_enabled from public.demo_settings where id=true");
+  return rows[0]?.guest_enabled === true;
 }

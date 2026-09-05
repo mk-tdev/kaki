@@ -3,7 +3,7 @@ import { createMission, listMissions } from "@/data/missions";
 import { missionCreateSchema } from "@/lib/ai/schemas";
 
 export async function GET() {
-  try { return NextResponse.json({ missions: await listMissions(), mode: "supabase" }); }
+  try { return NextResponse.json({ missions: await listMissions(), mode: "postgres" }); }
   catch (error) { const unauthorized = error instanceof Error && error.message === "Unauthorized"; return NextResponse.json({ error: unauthorized ? "Unauthorized" : "Could not load missions." }, { status: unauthorized ? 401 : 500 }); }
 }
 

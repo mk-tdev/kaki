@@ -1,8 +1,6 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
-
+import { query } from "@/lib/db/query";
 export async function takeAiQuota() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("take_ai_quota");
-  return !error && data === true;
+  const rows = await query<{allowed:boolean}>("select public.take_ai_quota() as allowed");
+  return rows[0]?.allowed === true;
 }

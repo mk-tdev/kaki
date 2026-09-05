@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireIdentity } from "@/lib/auth/server";
+import { query } from "@/lib/db/query";
 import type { CommunityNotification } from "@/types/kaki";
 
 type NotificationRow = {
@@ -11,14 +12,6 @@ type NotificationRow = {
   read_at: string | null;
   created_at: string;
 };
-
-async function authenticatedClient() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
-  if (error || !userId) throw new Error("Unauthorized");
-  return { supabase, userId };
-}
 
 function mapNotification(row: NotificationRow): CommunityNotification {
   return {
@@ -32,16 +25,10 @@ function mapNotification(row: NotificationRow): CommunityNotification {
 }
 
 export async function listNotifications(): Promise<CommunityNotification[]> {
-  const { supabase, userId } = await authenticatedClient();
-  const { data, error } = await supabase.from("notifications").select("id,mission_id,title,body,read_at,created_at").eq("recipient_id", userId).order("created_at", { ascending: false }).limit(50);
-  if (error) throw error;
-  return (data as NotificationRow[]).map(mapNotification);
+  const { sub } = await requireIdentity();
+  return (await query<NotificationRow>(`select id,mission_id,title,body,read_at,created_at from public.notifications where recipient_id=$1 order by created_at desc limit 50`,[sub])).map(mapNotification);
 }
-
 export async function markNotificationsRead(ids?: string[]) {
-  const { supabase, userId } = await authenticatedClient();
-  let query = supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("recipient_id", userId).is("read_at", null);
-  if (ids?.length) query = query.in("id", ids);
-  const { error } = await query;
-  if (error) throw error;
+  const { sub } = await requireIdentity();
+  await query(`update public.notifications set read_at=now() where recipient_id=$1 and read_at is null and ($2::uuid[] is null or id=any($2::uuid[]))`,[sub,ids?.length ? ids : null]);
 }

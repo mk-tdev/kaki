@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { POST as transcribe } from "@/app/api/ai/transcribe/route";
 import { POST as translate } from "@/app/api/ai/translate/route";
 const mocks=vi.hoisted(()=>({claims:vi.fn(),quota:vi.fn(),audio:vi.fn(),text:vi.fn()}));
-vi.mock("@/lib/supabase/server",()=>({createClient:async()=>({auth:{getClaims:mocks.claims}})}));
+vi.mock("@/lib/auth/server",()=>({createClient:async()=>({auth:{getClaims:mocks.claims}})}));
 vi.mock("@/lib/ai/quota",()=>({takeAiQuota:mocks.quota}));
 vi.mock("openai",()=>({default:class { audio={transcriptions:{create:mocks.audio}};responses={create:mocks.text}; }}));
 beforeEach(()=>{

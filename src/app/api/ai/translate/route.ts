@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/auth/server";
 import { takeAiQuota } from "@/lib/ai/quota";
 import { limitedBody, supportedLanguages } from "@/lib/ai/language";
 
@@ -9,8 +9,8 @@ const schema=z.object({text:z.string().trim().min(1).max(1000),language:z.enum(s
 export const maxDuration=30;
 export async function POST(request:Request) {
   try {
-    const supabase=await createClient();
-    const {data,error}=await supabase.auth.getClaims();
+    const authClient=await createClient();
+    const {data,error}=await authClient.auth.getClaims();
     if(error||!data?.claims?.sub)return NextResponse.json({error:"Please refresh to rejoin KAKI."},{status:401});
     const parsed=schema.safeParse(JSON.parse(new TextDecoder().decode(await limitedBody(request,16000))));
     if(!parsed.success)return NextResponse.json({error:"Choose a supported language and text up to 1,000 characters."},{status:400});

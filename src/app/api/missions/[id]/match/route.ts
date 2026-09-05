@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/auth/server";
 import { listMissions } from "@/data/missions";
 import { takeAiQuota } from "@/lib/ai/quota";
 import { matchInsightSchema } from "@/lib/ai/match-schema";
 
 export const maxDuration = 60;
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getClaims();
+  const authClient = await createClient();
+  const { data: auth } = await authClient.auth.getClaims();
   if (!auth?.claims?.sub) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   try {

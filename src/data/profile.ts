@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireIdentity } from "@/lib/auth/server";
+import { query } from "@/lib/db/query";
 import type { Profile, UserRole } from "@/types/kaki";
 
 const profileSelect = "id,full_name,role,onboarded_at,age_band,spoken_languages,skills,bio,verified_at";
@@ -32,43 +33,18 @@ function mapProfile(row: ProfileRow): Profile {
   };
 }
 
-async function authenticatedClient() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
-  if (error || !userId) throw new Error("Unauthorized");
-  return { supabase, userId };
-}
-
 export async function getCurrentProfile() {
-  const { supabase, userId } = await authenticatedClient();
-  const { data, error } = await supabase.from("profiles").select(profileSelect).eq("id", userId).single();
-  if (error) throw error;
-  const profile = mapProfile(data as ProfileRow);
-  const { data: auth } = await supabase.auth.getClaims();
-  return { ...profile, isGuest: auth?.claims?.is_anonymous === true };
+  const identity = await requireIdentity();
+  const rows = await query<ProfileRow>(`select ${profileSelect} from public.profiles where id=$1`,[identity.sub]);
+  if (!rows[0]) throw new Error("Unauthorized");
+  return { ...mapProfile(rows[0]), isGuest: identity.is_anonymous };
 }
-
 export async function updateCurrentProfile(input: {
-  fullName: string;
-  role: Exclude<UserRole, "organiser">;
-  preferredLanguage: string;
-  skills?: string[];
+  fullName: string; role: Exclude<UserRole, "organiser">; preferredLanguage: string; skills?: string[];
 }) {
-  const { supabase, userId } = await authenticatedClient();
-  const { data, error } = await supabase
-    .from("profiles")
-    .update({
-      full_name: input.fullName,
-      role: input.role,
-      preferred_language: input.preferredLanguage,
-      spoken_languages: [input.preferredLanguage],
-      onboarded_at: new Date().toISOString(),
-      ...(input.skills ? { skills: input.skills } : {}),
-    })
-    .eq("id", userId)
-    .select(profileSelect)
-    .single();
-  if (error) throw error;
-  return mapProfile(data as ProfileRow);
+  const { sub } = await requireIdentity();
+  const rows = await query<ProfileRow>(`update public.profiles set full_name=$2,role=$3,preferred_language=$4,spoken_languages=$5,onboarded_at=now(),skills=coalesce($6,skills) where id=$1 returning ${profileSelect}`,
+    [sub,input.fullName,input.role,input.preferredLanguage,[input.preferredLanguage],input.skills ?? null]);
+  if (!rows[0]) throw new Error("Unauthorized");
+  return mapProfile(rows[0]);
 }

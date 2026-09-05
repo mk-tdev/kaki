@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { Bloom, ImpactMetrics, Mission, Profile } from "@/types/kaki";
 
 type NewMission = Pick<Mission, "title" | "originalRequest" | "category" | "language" | "durationMinutes" | "location" | "scheduledAt" | "summary" | "guide" | "safetyLevel">;
@@ -52,17 +51,12 @@ export function MissionProvider({ children, profile, initialMissions, initialBlo
   }, []);
 
   useEffect(() => {
-    const supabase = createClient();
     const sync = () => { if (document.visibilityState === "visible") void refresh().catch(() => setSyncError("Connection interrupted. Reconnecting…")); };
-    const channel = supabase
-      .channel("kaki-live-product")
-      .on("postgres_changes", { event: "*", schema: "public", table: "missions" }, sync)
-      .on("postgres_changes", { event: "*", schema: "public", table: "blooms" }, sync)
-      .subscribe();
+
     const interval = window.setInterval(sync, 5000);
     window.addEventListener("focus", sync);
     window.addEventListener("online", sync);
-    return () => { window.clearInterval(interval); window.removeEventListener("focus", sync); window.removeEventListener("online", sync); void supabase.removeChannel(channel); };
+    return () => { window.clearInterval(interval); window.removeEventListener("focus", sync); window.removeEventListener("online", sync);  };
   }, [refresh]);
 
   const impact = useMemo<ImpactMetrics>(() => ({

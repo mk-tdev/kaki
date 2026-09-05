@@ -1,14 +1,14 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/auth/server";
 import { takeAiQuota } from "@/lib/ai/quota";
 import { audioTypes, limitedBody, MAX_AUDIO_BYTES } from "@/lib/ai/language";
 
 export const maxDuration = 30;
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.getClaims();
+    const authClient = await createClient();
+    const { data, error } = await authClient.auth.getClaims();
     if (error || !data?.claims?.sub) return NextResponse.json({error:"Please refresh to rejoin KAKI."},{status:401});
     if (!process.env.OPENAI_API_KEY) return NextResponse.json({error:"Voice input is not configured. You can still type."},{status:503});
     if (!request.headers.get("content-type")?.startsWith("multipart/form-data")) return NextResponse.json({error:"Send a microphone recording."},{status:415});

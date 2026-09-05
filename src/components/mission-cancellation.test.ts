@@ -8,7 +8,6 @@ import { MissionDetail } from "./mission-detail";
 
 const state=vi.hoisted(()=>({value:{} as Record<string,unknown>}));
 vi.mock("./mission-provider",()=>({useMissions:()=>state.value}));
-vi.mock("@/lib/supabase/client",()=>({createClient:()=>({channel:()=>{const channel={on:()=>channel,subscribe:()=>channel};return channel;},removeChannel:vi.fn()})}));
 vi.mock("./match-reveal",()=>({MatchReveal:()=>null}));
 let root:Root;
 let container:HTMLDivElement;
