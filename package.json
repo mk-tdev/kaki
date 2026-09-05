@@ -11,15 +11,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:migrate": "node --env-file=.env.azure.local scripts/migrate.mjs",
-    "azure:dev": "node --env-file=.env.azure.local scripts/azure/dev.mjs"
+    "azure:dev": "node --env-file=.env.frontend.local scripts/azure/dev.mjs",
+    "api:build": "npm --prefix services/api run build",
+    "api:deploy": "node scripts/azure/deploy-api.mjs",
+    "azure:frontend-env": "node scripts/azure/frontend-env.mjs"
   },
   "dependencies": {
     "clsx": "2.1.1",
     "lucide-react": "1.41.0",
     "motion": "13.2.0",
     "next": "16.3.4",
-    "openai": "7.10.0",
-    "pg": "8.23.0",
     "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -38,6 +39,7 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.4",
     "jsdom": "30.0.1",
+    "pg": "8.23.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "5.0.0"

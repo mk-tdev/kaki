@@ -50,3 +50,6 @@ next-env.d.ts
 
 # Isolated Azure implementation build
 /.next-azure/
+
+/services/api/node_modules/
+/services/api/dist/

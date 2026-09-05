@@ -1,6 +1,6 @@
 # Azure PostgreSQL pilot
 
-Branch: `feature/azure-postgres-backend`. Vercel continues hosting the app; Supabase is no longer used by this branch. Existing Supabase data and production deployments are not modified.
+Branch: `feature/azure-postgres-backend`. Vercel hosts the Next.js frontend and forwards authenticated HTTPS requests to a standalone NestJS API on Azure App Service; the API reaches PostgreSQL through a private endpoint; Supabase is no longer used by this branch. Existing Supabase data and production deployments are not modified.
 
 ## Disposable Azure boundary
 
@@ -10,19 +10,49 @@ Accounts, opaque sessions, quotas, missions, messages and consent records live i
 
 Vercel and OpenAI are existing external services and remain outside the resource group. Deleting Azure removes this branch's backend, not those accounts or deployments. Treat group deletion as irreversible data loss; export anything you want to retain first. Azure may retain service-managed recovery data according to its service retention rules.
 
+## Architecture and resources
+
+```text
+Browser → Vercel Next.js → HTTPS → Azure NestJS API → VNet/private endpoint → PostgreSQL
+```
+
+The Next.js server handles the HttpOnly session cookie and forwards requests to NestJS. Browsers never receive the bridge key or database credentials. This same-origin bridge preserves server rendering and avoids cross-origin cookie/CORS requirements.
+
+| Resource | Name |
+| --- | --- |
+| Resource group | `rg-kaki-azure-pilot` |
+| Linux App Service plan (B1) | `plan-kaki-api` |
+| NestJS App Service (Node 24) | `kaki-api-64cc2118` |
+| VNet | `vnet-kaki-api` |
+| App integration subnet | `api-integration`, `10.42.0.0/24` |
+| Database endpoint subnet | `database-endpoint`, `10.42.1.0/24` |
+| PostgreSQL private endpoint | `pe-kaki-postgres` |
+| Private DNS zone | `privatelink.postgres.database.azure.com` |
+
+API origin: **https://kaki-api-64cc2118.azurewebsites.net**. `/health` is public process readiness; `/api/health` requires the private bridge key and checks database connectivity. PostgreSQL public access is disabled. The deployed API resolves the database to `10.42.1.4` inside the VNet. Vercel needs no database firewall rule or static outbound IP.
+
 ## Credentials and local development
 
-Provisioning writes **.env.azure.local** with mode 0600. It is gitignored and contains the admin connection, restricted runtime connection and registration invite. Never print or commit it, and never give the admin connection to Vercel.
+`.env.azure.local` is a gitignored operator file (mode 0600) with Azure identifiers, runtime/admin database credentials, invitation and bridge key. `.env.frontend.local` contains only the frontend's API settings. Never commit either file.
 
 ```sh
 npm ci
-npm run db:migrate
+npm ci --prefix services/api
+npm run azure:frontend-env
 npm run azure:dev
 ```
 
-Open http://localhost:5027/share in separate browser profiles for requester and helper. The isolated server uses `.next-azure` and leaves port 5026 available. Existing `.env.local` supplies the existing OpenAI settings; the explicitly loaded Azure database variables take precedence. Keep secrets out of screenshots and terminal recordings.
+The local frontend opens at http://localhost:5027 and uses the deployed Azure API. It uses `.next-azure`, leaving port 5026 available. Local laptops cannot directly reach the private database. For fully local backend development, use a separately configured local PostgreSQL database and the variables in `services/api/.env.example`.
 
-`npm run db:migrate` applies checksum-tracked migrations under `db/migrations`, using an advisory lock and one transaction per migration. It then sets the `kaki_app` password from the runtime URL. Re-running it is safe; changing an applied migration is rejected. `supabase/migrations` remains historical reference only.
+To redeploy backend changes after `az login`:
+
+```sh
+npm run api:deploy
+```
+
+The deployment builds NestJS, packages production dependencies and deploys to the existing App Service. It securely applies runtime settings from `.env.azure.local` and existing `.env.local` AI settings. Administrator credentials are never deployed. Verify `/health` and the authenticated database health endpoint after deployment.
+
+`npm run db:migrate` and the account operator commands require database network access: run them from a controlled VNet-connected operator environment with the private operator credentials. They no longer work directly from an ordinary laptop. Do not reopen public database access for routine application use. Migrations are checksum-tracked, locked and transactional; changing an applied migration is rejected. `supabase/migrations` is historical reference only.
 
 ## Authentication differences
 
@@ -51,32 +81,23 @@ The runtime login is `NOINHERIT`, owns no application tables and has no direct a
 
 The `auth` schema is now application-owned PostgreSQL code; its familiar `auth.uid()` and `auth.jwt()` function names preserve the reviewed policies without any Supabase service connection. Runtime credentials are trusted server secrets: do not expose SQL endpoints or accept identity claims from clients.
 
-TLS certificate validation is enabled. Use the generated URL without `sslmode` overrides. Each Vercel instance has at most three database connections by default. Account for aggregate concurrency before increasing traffic; B1ms has limited memory/connections. Migrations always use the separate administrator connection.
+TLS certificate validation is enabled. Use the generated URL without `sslmode` overrides. Each NestJS process has at most three database connections by default. Account for aggregate concurrency before increasing traffic; B1ms has limited memory/connections. Migrations always use the separate administrator connection.
 
-## Network access and Vercel preview
+## Vercel preview configuration
 
-The server uses a public endpoint with an explicit developer-IP firewall rule, not an allow-all rule. A local IP change requires updating `developer-current-ip` with your new public IPv4 address:
-
-```sh
-az postgres flexible-server firewall-rule update \
-  --resource-group rg-kaki-azure-pilot \
-  --server-name kaki-pg-64cc2118 --name developer-current-ip \
-  --start-ip-address YOUR_IP --end-ip-address YOUR_IP
-```
-
-Before deploying this branch on Vercel, obtain [stable Vercel egress IPs](https://vercel.com/changelog/static-ips-are-now-available-for-more-secure-connectivity) for the selected deployment/region and add narrow rules for those addresses. Ordinary changing serverless egress addresses cannot be reliably allowlisted. Do not solve this by silently opening PostgreSQL to the internet. If static egress is unavailable in your Vercel plan, keep the local Azure pilot running and choose either the relevant Vercel network option or an Azure-hosted API in the same resource group before deploying.
-
-Set these **branch-scoped Preview** environment variables:
+Set these server-only variables for **Preview**, scoped to `feature/azure-postgres-backend`, then redeploy that branch:
 
 | Variable | Value |
 | --- | --- |
-| `DATABASE_URL` | Restricted `kaki_app` URL from the private file |
-| `DATABASE_POOL_MAX` | `3` initially |
-| `AUTH_INVITE_CODE` | Private organiser invitation |
-| `APP_ORIGIN` | Exact HTTPS origin of the preview |
-| Existing `OPENAI_*` settings | Existing AI configuration |
+| `API_BASE_URL` | `https://kaki-api-64cc2118.azurewebsites.net` (no `/api` suffix) |
+| `API_BRIDGE_KEY` | Copy from private `.env.frontend.local` |
+| `APP_ORIGIN` | Exact HTTPS origin of the chosen preview/branch URL |
 
-Never set `DATABASE_ADMIN_URL` on Vercel. Supabase public environment variables are unused by this branch and can be removed from that preview environment. Do not change production settings until the preview has passed the full journey. Keep the app and database geographically close and measure navigation latency before claiming a speed improvement.
+Do not prefix these with `NEXT_PUBLIC_`. The bridge key authenticates the Next.js server to NestJS; opaque user sessions provide user identity separately. The frontend no longer needs `DATABASE_URL`, `DATABASE_ADMIN_URL`, `AUTH_INVITE_CODE` or `OPENAI_*`; those runtime secrets belong on Azure (except the admin URL, which belongs only with operators). Supabase settings are unused on this branch. Preserve settings needed by the existing production branch until cutover.
+
+The project root remains the repository root and uses the normal Next.js build. Deploy NestJS separately with `npm run api:deploy`. New builds require `npm ci --prefix services/api` only for backend builds and the combined repository tests, not for the Vercel frontend build.
+
+Vercel CLI was not authenticated during setup, so these Vercel environment changes still require an authenticated dashboard/CLI session. Production has not been switched. Verify a branch preview before production cutover. Keep a stable preview alias for `APP_ORIGIN` so mutating requests pass the exact-origin check.
 
 ## Existing Supabase data
 
@@ -91,6 +112,7 @@ This Azure pilot starts empty; it does not pretend old accounts or sessions migr
 ## Verification
 
 ```sh
+npm run api:build
 npm run typecheck
 npm run lint
 npm test
@@ -101,7 +123,7 @@ Database tests execute the actual Azure migrations in PostgreSQL/PGlite, includi
 
 ## Provisioning another disposable pilot
 
-The current resources are already provisioned. `python3 scripts/azure/provision.py` is for a fresh setup after `az login`; it refuses to overwrite an existing group or credential file. It creates only the named group and PostgreSQL resources. If provisioning is interrupted, inspect the existing resources and resume the failed step; do not discard the credential file. The script uses Azure CLI and incurs Azure charges while the server exists.
+The current resources are already provisioned. `python3 scripts/azure/provision.py` is for a fresh setup after `az login`; it refuses to overwrite an existing group or credential file. It creates the named group and PostgreSQL resources. Then run `python3 scripts/azure/provision-api.py` to add the API, VNet and private endpoint in the same group. Deploy and verify private connectivity before disabling PostgreSQL public access with `az postgres flexible-server update -g rg-kaki-azure-pilot -n kaki-pg-64cc2118 --public-access Disabled`. If provisioning is interrupted, inspect the existing resources and resume the failed step; do not discard the credential file. The script uses Azure CLI and incurs Azure charges while the server exists.
 
 ## Teardown
 
@@ -112,4 +134,4 @@ az group delete --name rg-kaki-azure-pilot --yes --no-wait
 az group exists --name rg-kaki-azure-pilot
 ```
 
-The second command eventually returns `false`. Remove the branch's Vercel secrets and delete the local `.env.azure.local` when no longer needed. These secret copies are not Azure resources and are not deleted with the group. No teardown runs automatically.
+The second command eventually returns `false`. Remove the branch's Vercel secrets and delete the local `.env.azure.local` and `.env.frontend.local` when no longer needed. These secret copies are not Azure resources and are not deleted with the group. No teardown runs automatically.

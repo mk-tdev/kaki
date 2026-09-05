@@ -1,6 +1,5 @@
 import "server-only";
-import { query } from "@/lib/db/query";
+import { apiGet } from "@/lib/api/server";
 export async function guestModeEnabled() {
-  const rows = await query<{guest_enabled:boolean}>("select guest_enabled from public.demo_settings where id=true");
-  return rows[0]?.guest_enabled === true;
+ return (await apiGet<{enabled:boolean}>("/api/guest-mode")).enabled;
 }

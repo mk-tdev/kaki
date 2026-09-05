@@ -27,31 +27,33 @@ KAKI is a mobile-first neighbour action network for Pek Kio, Singapore. It turns
 - Next.js 16 App Router, React 19 and TypeScript
 - Tailwind CSS 4
 - OpenAI Responses API with structured output
-- Azure PostgreSQL, server-managed sessions and Row Level Security
+- Azure NestJS API, private Azure PostgreSQL, server-managed sessions and Row Level Security
 - Motion for the community mural
 - Vitest for AI rule and schema tests
 
 ## Azure backend pilot
 
-This feature branch replaces Supabase with Azure PostgreSQL, server-managed guest/account sessions and polling for live updates. Vercel hosting and the OpenAI integration remain available.
+This feature branch uses a Vercel Next.js frontend, an HTTPS NestJS API on Azure App Service, and Azure PostgreSQL reached through a private endpoint. The API owns database access, sessions, business rules and OpenAI calls.
 
-See [Azure setup, deployment and teardown](docs/AZURE.md) for the resource group, private environment file, firewall requirements, account invitations and migration limitations.
+See [Azure setup, deployment and teardown](docs/AZURE.md) for the resource group, private environment file, private networking, account invitations and migration limitations.
 
 ```sh
 npm ci
-npm run db:migrate
+npm ci --prefix services/api
+npm run azure:frontend-env
 npm run azure:dev
 ```
 
-The isolated Azure development server opens on http://localhost:5027. Product routes use the Azure database; `/demo` remains labelled sample content. No existing Supabase data or sessions are automatically imported.
+The isolated Azure development server opens on http://localhost:5027. Product routes use the deployed Azure API; `/demo` remains labelled sample content. No existing Supabase data or sessions are automatically imported.
 
 Permanent pilot accounts require an organiser invitation and do not verify email ownership. Guest entry remains instant. All newly created Azure resources are in `rg-kaki-azure-pilot`; deleting that group removes the backend.
 
-The `.env.example` documents runtime settings. `.env.azure.local` is private and gitignored. Only the restricted `DATABASE_URL` belongs in the running app; `DATABASE_ADMIN_URL` is for migrations and operator tools. Keep the existing `OPENAI_*` settings for AI features. Audio is processed transiently and not stored.
+The `.env.example` documents the frontend API settings; `services/api/.env.example` documents backend settings. Private operator credentials stay in `.env.azure.local`; generated `.env.frontend.local` contains only the API connection settings. PostgreSQL public access is disabled, so operator database tools require a VNet-connected environment. Audio is processed transiently and not stored.
 
 ## Quality checks
 
 ```bash
+npm run api:build
 npm run typecheck
 npm run lint
 npm test
