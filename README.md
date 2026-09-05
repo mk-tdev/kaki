@@ -70,6 +70,7 @@ The app always uses Supabase cloud. The isolated PGlite tests run PostgreSQL in 
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe Supabase key |
 | `OPENAI_API_KEY` | Server-only suggestions and mission generation |
 | `OPENAI_MODEL` | Optional model override; defaults to `gpt-5-mini` |
+| `OPENAI_SUGGESTIONS_MODEL` | Independent fast autocomplete model; defaults to `gpt-4.1-nano` |
 
 ## Quality checks
 

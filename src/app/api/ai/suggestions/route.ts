@@ -20,10 +20,12 @@ export async function POST(request: Request) {
     if (!process.env.OPENAI_API_KEY) return NextResponse.json({ error: "AI suggestions are not configured." }, { status: 503 });
     if (!await takeAiQuota()) return NextResponse.json({ error: "AI request limit reached. Please try later." }, { status: 429 });
 
-    const suggestions = await generateAssistanceSuggestions(payload.data.request, payload.data.language);
+    if (request.signal.aborted) return new NextResponse(null, { status: 499 });
+    const suggestions = await generateAssistanceSuggestions(payload.data.request, payload.data.language, request.signal);
     return NextResponse.json({ suggestions, mode: "openai" }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    console.error("assistance suggestion generation failed", error);
+    if (request.signal.aborted) return new NextResponse(null, { status: 499 });
+    console.error("assistance suggestion generation failed", error instanceof Error ? error.name : "Unknown error");
     return NextResponse.json({ error: "AI suggestions are taking a short break." }, { status: 500 });
   }
 }
