@@ -39,7 +39,7 @@ const totalDuration = sceneDurations.reduce((sum, duration) => sum + duration, 0
 function IntroScene({ onBegin }: { onBegin: () => void }) {
   return <div className="grid min-h-0 flex-1 items-center gap-6 lg:grid-cols-[.88fr_1.12fr]">
     <div className="relative z-10 py-4 lg:py-8">
-      <h1 className="max-w-3xl text-[clamp(2.8rem,6.2vw,6.7rem)] font-black leading-[.88] tracking-[-.07em] text-ink">AI can answer<br />a question.<br /><span className="text-purple">A neighbour can<br />change the moment.</span></h1>
+      <h1 className="max-w-3xl text-[clamp(2.25rem,4.5vw,5rem)] font-black leading-[.94] tracking-[-.055em] text-ink">AI can answer<br />a question.<br /><span className="text-purple">A neighbour can<br />change the moment.</span></h1>
       <p className="mt-6 max-w-xl text-[clamp(1rem,1.7vw,1.45rem)] leading-relaxed text-muted">KAKI turns everyday needs into small, safe missions—and finds someone nearby who can help.</p>
       <button onClick={onBegin} className="mt-6 inline-flex min-h-14 items-center gap-4 rounded-xl bg-purple px-6 text-base font-black text-white shadow-[0_6px_0_#382681] transition-transform motion-safe:hover:translate-y-0.5">Begin story <ArrowRight className="size-5" /></button>
     </div>
@@ -134,7 +134,7 @@ function ClosingScene({ qrCode }: { qrCode: string }) {
   return <div className="grid min-h-0 flex-1 items-center gap-8 lg:grid-cols-[1fr_auto]">
     <div>
       <p className="text-[clamp(1.3rem,2.2vw,2rem)] font-black">Don’t build AI that replaces community.</p>
-      <h1 className="mt-4 max-w-5xl text-[clamp(4rem,9vw,9rem)] font-black leading-[.82] tracking-[-.075em] text-purple">Build AI that<br />activates it.</h1>
+      <h1 className="mt-4 max-w-5xl text-[clamp(3rem,6.7vw,6.5rem)] font-black leading-[.9] tracking-[-.06em] text-purple">Build AI that<br />activates it.</h1>
       <div className="mt-9 flex flex-wrap gap-3">
         <Link href="/home" className="inline-flex min-h-14 items-center gap-3 rounded-xl bg-purple px-6 text-base font-black text-white shadow-[0_6px_0_#382681]">Open KAKI <ArrowRight className="size-5" /></Link>
         <Link href="/share" className="inline-flex min-h-14 items-center gap-3 rounded-xl border-2 border-ink/15 bg-paper px-6 text-base font-black"><QrCode className="size-5" />Scan to try</Link>
@@ -208,20 +208,22 @@ export function PresentationDeck({ qrCode }: { qrCode: string }) {
       </div>
     </header>
 
-    <section key={current} className="presentation-scene flex min-h-0 flex-1 flex-col" aria-label={`Scene ${current + 1}: ${scenes[current].shortTitle}`} onTouchStart={event => { touchStart.current = event.changedTouches[0].clientX; }} onTouchEnd={event => { if (touchStart.current === null) return; const distance = event.changedTouches[0].clientX - touchStart.current; if (Math.abs(distance) > 60) go(current + (distance < 0 ? 1 : -1)); touchStart.current = null; }}>
-      {scenes[current].content}
-    </section>
+    <div className="flex min-h-0 flex-1 pt-3">
+      <section key={current} className="presentation-scene flex min-h-0 min-w-0 flex-1 flex-col pr-3 sm:pr-6" aria-label={`Scene ${current + 1}: ${scenes[current].shortTitle}`} onTouchStart={event => { touchStart.current = event.changedTouches[0].clientX; }} onTouchEnd={event => { if (touchStart.current === null) return; const distance = event.changedTouches[0].clientX - touchStart.current; if (Math.abs(distance) > 60) go(current + (distance < 0 ? 1 : -1)); touchStart.current = null; }}>
+        {scenes[current].content}
+      </section>
 
-    <footer className="flex shrink-0 items-center gap-3 border-t border-ink/15 pt-3">
-      <div className="w-24 shrink-0"><span className="text-lg font-black text-purple">{String(current + 1).padStart(2, "0")}</span><span className="text-sm font-bold text-muted"> / 07</span></div>
-      <ol className="flex flex-1 gap-1.5" aria-label="Presentation progress">{scenes.map((scene, index) => <li key={scene.shortTitle} className="flex-1"><button onClick={() => go(index)} aria-label={`Go to scene ${index + 1}: ${scene.shortTitle}`} aria-current={index === current ? "step" : undefined} className={cn("h-2 w-full rounded-sm transition-colors", index <= current ? "bg-purple" : "bg-ink/10")} /></li>)}</ol>
-      <div className="flex shrink-0 gap-2">
-        <button onClick={() => go(current - 1)} disabled={current === 0} className="grid size-11 place-items-center rounded-lg border border-ink/15 bg-paper disabled:opacity-30" aria-label="Previous scene"><ArrowLeft className="size-5" /></button>
-        <button onClick={() => { if (!running) setRunning(true); go(current + 1); }} disabled={current === scenes.length - 1} className="grid size-11 place-items-center rounded-lg bg-purple text-white disabled:opacity-30" aria-label="Next scene"><ArrowRight className="size-5" /></button>
-      </div>
-    </footer>
+      <nav className="sticky top-3 flex h-[calc(100dvh-5.5rem)] w-12 shrink-0 self-start flex-col items-center border-l border-ink/15 pl-2 sm:w-20 sm:pl-4 lg:static lg:h-auto lg:self-stretch" aria-label="Presentation controls">
+        <div className="mb-3 text-center leading-none"><span className="block text-base font-black text-purple sm:text-lg">{String(current + 1).padStart(2, "0")}</span><span className="mt-1 block text-[10px] font-bold text-muted sm:text-xs">/ 07</span></div>
+        <ol className="flex min-h-40 flex-1 flex-col gap-1.5" aria-label="Presentation progress">{scenes.map((scene, index) => <li key={scene.shortTitle} className="min-h-4 flex-1"><button onClick={() => go(index)} aria-label={`Go to scene ${index + 1}: ${scene.shortTitle}`} aria-current={index === current ? "step" : undefined} className={cn("h-full w-2 rounded-sm transition-colors sm:w-2.5", index <= current ? "bg-purple" : "bg-ink/10")} /></li>)}</ol>
+        <div className="mt-3 flex flex-col gap-2">
+          <button onClick={() => go(current - 1)} disabled={current === 0} className="grid size-10 place-items-center rounded-lg border border-ink/15 bg-paper disabled:opacity-30 sm:size-11" aria-label="Previous scene"><ArrowLeft className="size-5" /></button>
+          <button onClick={() => { if (!running) setRunning(true); go(current + 1); }} disabled={current === scenes.length - 1} className="grid size-10 place-items-center rounded-lg bg-purple text-white disabled:opacity-30 sm:size-11" aria-label="Next scene"><ArrowRight className="size-5" /></button>
+        </div>
+      </nav>
+    </div>
 
-    {notesOpen ? <aside className="fixed inset-x-4 bottom-20 z-50 mx-auto max-w-3xl border-2 border-ink bg-paper p-5 shadow-[10px_10px_0_#f8c84a]" aria-label="Speaker notes">
+    {notesOpen ? <aside className="fixed bottom-4 left-4 right-16 z-50 mx-auto max-w-3xl border-2 border-ink bg-paper p-5 shadow-[10px_10px_0_#f8c84a] sm:right-24" aria-label="Speaker notes">
       <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.15em] text-purple">Speaker note · {scenes[current].duration} sec</p><p className="mt-2 text-base font-bold leading-relaxed">{scenes[current].note}</p><p className="mt-3 text-xs text-muted">Target by this scene: {Math.floor(cumulativeTarget / 60)}:{(cumulativeTarget % 60).toString().padStart(2, "0")} · Full pitch: {Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, "0")}</p></div><button onClick={() => setNotesOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink text-white" aria-label="Close speaker notes"><X className="size-4" /></button></div>
     </aside> : null}
   </main>;

@@ -43,7 +43,7 @@
 .voice-bar { animation: kaki-wave .8s ease-in-out infinite; }
 @keyframes pitch-scene-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 .presentation-scene { animation: pitch-scene-in .38s ease-out both; }
-.slide-heading { font-size: clamp(2.8rem, 6vw, 6.5rem); font-weight: 900; line-height: .9; letter-spacing: -.065em; }
+.slide-heading { font-size: clamp(2.2rem, 4.3vw, 4.8rem); font-weight: 900; line-height: .96; letter-spacing: -.05em; }
 @media (prefers-reduced-motion: reduce) {
   .reveal-in,.journey-walking,.bloom-pop,.bloom-petal,.voice-bar,.presentation-scene { animation: none; }
   .journey-kaki { transition: none; }
@@ -51,7 +51,7 @@
 }
 @media (max-height: 720px) and (min-width: 1024px) {
   .presentation-shell { overflow-y: auto; }
-  .slide-heading { font-size: clamp(2.5rem, 5vw, 5rem); }
+  .slide-heading { font-size: clamp(2.1rem, 4vw, 4rem); }
 }
 
 :root {
