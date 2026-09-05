@@ -1,0 +1,228 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bot,
+  Check,
+  Expand,
+  HandHeart,
+  HeartHandshake,
+  Languages,
+  MapPin,
+  MessageCircle,
+  Mic,
+  Pause,
+  Play,
+  QrCode,
+  RotateCcw,
+  StickyNote,
+  Users,
+  X,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Logo } from "@/components/brand/logo";
+import { cn } from "@/lib/utils";
+
+type Scene = {
+  shortTitle: string;
+  duration: number;
+  note: string;
+  content: ReactNode;
+};
+
+const sceneDurations = [30, 45, 35, 50, 45, 45, 35];
+const totalDuration = sceneDurations.reduce((sum, duration) => sum + duration, 0);
+
+function IntroScene({ onBegin }: { onBegin: () => void }) {
+  return <div className="grid min-h-0 flex-1 items-center gap-6 lg:grid-cols-[.88fr_1.12fr]">
+    <div className="relative z-10 py-4 lg:py-8">
+      <h1 className="max-w-3xl text-[clamp(2.8rem,6.2vw,6.7rem)] font-black leading-[.88] tracking-[-.07em] text-ink">AI can answer<br />a question.<br /><span className="text-purple">A neighbour can<br />change the moment.</span></h1>
+      <p className="mt-6 max-w-xl text-[clamp(1rem,1.7vw,1.45rem)] leading-relaxed text-muted">KAKI turns everyday needs into small, safe missions—and finds someone nearby who can help.</p>
+      <button onClick={onBegin} className="mt-6 inline-flex min-h-14 items-center gap-4 rounded-xl bg-purple px-6 text-base font-black text-white shadow-[0_6px_0_#382681] transition-transform motion-safe:hover:translate-y-0.5">Begin story <ArrowRight className="size-5" /></button>
+    </div>
+    <div className="relative h-[34vh] min-h-64 overflow-hidden border-b-4 border-sun lg:h-[68vh] lg:min-h-[520px]">
+      <Image src="/assets/kaki-presentation-neighbour.png" alt="A community organiser and an older neighbour exploring AI together" fill priority sizes="(max-width: 1024px) 100vw, 58vw" className="object-cover object-[68%_center]" />
+    </div>
+  </div>;
+}
+
+function WitnessScene() {
+  return <div className="grid min-h-0 flex-1 items-center gap-8 lg:grid-cols-[1fr_.92fr]">
+    <div>
+      <h1 className="slide-heading">Today, I saw <span className="text-purple">the idea.</span></h1>
+      <blockquote className="mt-7 max-w-3xl border-l-4 border-purple pl-5 text-[clamp(1.25rem,2.4vw,2.2rem)] font-bold leading-snug text-ink">“An organiser sat beside an older neighbour and showed her what ChatGPT could do.”</blockquote>
+      <p className="mt-8 max-w-3xl text-[clamp(1.1rem,1.8vw,1.5rem)] leading-relaxed text-muted">The barrier wasn’t intelligence. It was <strong className="text-purple">confidence</strong>, <strong className="text-coral">language</strong>—and <strong className="text-ink">having someone beside her.</strong></p>
+    </div>
+    <div className="relative h-[38vh] min-h-72 overflow-hidden border-b-4 border-coral lg:h-[61vh] lg:min-h-[480px]">
+      <Image src="/assets/kaki-presentation-neighbour.png" alt="" fill sizes="(max-width: 1024px) 100vw, 48vw" className="object-cover object-[72%_center]" />
+    </div>
+  </div>;
+}
+
+const needs = [
+  { label: "Teach me", detail: "A phone feature", icon: MessageCircle, tone: "bg-sun" },
+  { label: "Walk with me", detail: "A little movement", icon: Users, tone: "bg-coral text-white" },
+  { label: "Show me how", detail: "A skill worth sharing", icon: HandHeart, tone: "bg-mint" },
+];
+
+function OpportunityScene() {
+  return <div className="flex min-h-0 flex-1 flex-col justify-center">
+    <h1 className="slide-heading max-w-6xl">What if every small need could find the <span className="text-purple">right neighbour?</span></h1>
+    <div className="mt-10 grid divide-y border-y border-ink/15 md:grid-cols-3 md:divide-x md:divide-y-0">
+      {needs.map(({ label, detail, icon: Icon, tone }) => <div key={label} className="group flex items-center gap-5 px-2 py-6 sm:px-6 md:py-10">
+        <span className={cn("grid size-16 shrink-0 place-items-center rounded-xl", tone)}><Icon className="size-8" /></span>
+        <div><h2 className="text-[clamp(1.6rem,3vw,3rem)] font-black tracking-tight">{label}</h2><p className="mt-1 text-muted">{detail}</p></div>
+      </div>)}
+    </div>
+    <p className="mt-8 max-w-3xl text-xl font-bold leading-relaxed text-muted">Not a marketplace of strangers. A trusted way for neighbours of every age to ask, step forward, and exchange value.</p>
+  </div>;
+}
+
+const flow = [
+  { label: "Speak naturally", icon: Mic, tone: "bg-sun" },
+  { label: "AI shapes a safe mission", icon: Bot, tone: "bg-mint" },
+  { label: "A Kaki steps forward", icon: HeartHandshake, tone: "bg-coral text-white" },
+  { label: "Meet. Help. Share.", icon: MapPin, tone: "bg-purple text-white" },
+];
+
+function ProductScene() {
+  return <div className="flex min-h-0 flex-1 flex-col justify-center">
+    <h1 className="slide-heading">From “I need help”<br />to <span className="text-purple">“I’ve got you.”</span></h1>
+    <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {flow.map(({ label, icon: Icon, tone }, index) => <div key={label} className="relative flex min-h-36 flex-col justify-between border-t-4 border-ink bg-paper p-5 shadow-[0_8px_0_rgba(33,29,53,.07)]">
+        <span className={cn("grid size-12 place-items-center rounded-lg", tone)}><Icon className="size-6" /></span>
+        <div><span className="text-xs font-black text-purple">0{index + 1}</span><h2 className="mt-1 text-xl font-black leading-tight">{label}</h2></div>
+        {index < flow.length - 1 ? <ArrowRight className="absolute -right-5 top-1/2 z-10 hidden size-7 -translate-y-1/2 rounded-full bg-cream p-1 text-purple lg:block" /> : null}
+      </div>)}
+    </div>
+    <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 text-base font-bold text-muted"><span className="flex items-center gap-2"><Languages className="size-5 text-purple" />4 community languages</span><span className="flex items-center gap-2"><Check className="size-5 text-kaki-green" />Public-place safety built in</span><span className="flex items-center gap-2"><MessageCircle className="size-5 text-coral" />Real-time coordination</span></div>
+  </div>;
+}
+
+function AiScene() {
+  return <div className="flex min-h-0 flex-1 flex-col justify-center">
+    <h1 className="slide-heading">AI does the <span className="text-purple">invisible work.</span></h1>
+    <div className="mt-10 grid overflow-hidden border border-ink/15 lg:grid-cols-[1fr_auto_1fr]">
+      <div className="bg-mint p-6 sm:p-9"><Bot className="size-10 text-purple" /><h2 className="mt-5 text-3xl font-black">AI</h2><p className="mt-4 text-lg font-bold leading-9">Understand · Translate<br />Structure · Match · Guide</p></div>
+      <div className="relative z-10 grid bg-ink px-6 py-8 text-center text-white lg:w-64 lg:place-items-center"><p className="text-2xl font-black leading-tight">AI creates clarity.<br /><span className="text-sun">People create belonging.</span></p></div>
+      <div className="bg-coral p-6 text-white sm:p-9"><Users className="size-10" /><h2 className="mt-5 text-3xl font-black">Human</h2><p className="mt-4 text-lg font-bold leading-9">Trust · Decide · Meet<br />Teach · Care</p></div>
+    </div>
+    <p className="mt-7 max-w-4xl text-lg leading-relaxed text-muted">KAKI uses AI to remove friction—not agency. Neighbours choose whether to connect, where to meet, and when to step away.</p>
+  </div>;
+}
+
+function ValueScene() {
+  return <div className="grid min-h-0 flex-1 items-center gap-8 lg:grid-cols-[1fr_.82fr]">
+    <div>
+      <h1 className="slide-heading">One platform.<br />Two generations.<br /><span className="text-purple">Value in both directions.</span></h1>
+      <div className="mt-8 flex flex-col border-y border-ink/15 sm:flex-row">
+        <div className="flex-1 py-5 sm:pr-6"><p className="text-sm font-black text-purple">YOUNGER NEIGHBOUR SHARES</p><p className="mt-2 text-2xl font-black">Digital confidence</p></div>
+        <div className="flex-1 border-t border-ink/15 py-5 sm:border-l sm:border-t-0 sm:pl-6"><p className="text-sm font-black text-coral">OLDER NEIGHBOUR SHARES</p><p className="mt-2 text-2xl font-black">Life skills & stories</p></div>
+      </div>
+      <p className="mt-7 text-xl font-bold text-muted">Connection · Confidence · A stronger kampung</p>
+    </div>
+    <div className="relative h-[42vh] min-h-80 overflow-hidden border-b-4 border-purple lg:h-[65vh]">
+      <Image src="/assets/kaki-community-hero.png" alt="Pek Kio neighbours of different generations sharing skills" fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover object-center" />
+    </div>
+  </div>;
+}
+
+function ClosingScene({ qrCode }: { qrCode: string }) {
+  return <div className="grid min-h-0 flex-1 items-center gap-8 lg:grid-cols-[1fr_auto]">
+    <div>
+      <p className="text-[clamp(1.3rem,2.2vw,2rem)] font-black">Don’t build AI that replaces community.</p>
+      <h1 className="mt-4 max-w-5xl text-[clamp(4rem,9vw,9rem)] font-black leading-[.82] tracking-[-.075em] text-purple">Build AI that<br />activates it.</h1>
+      <div className="mt-9 flex flex-wrap gap-3">
+        <Link href="/home" className="inline-flex min-h-14 items-center gap-3 rounded-xl bg-purple px-6 text-base font-black text-white shadow-[0_6px_0_#382681]">Open KAKI <ArrowRight className="size-5" /></Link>
+        <Link href="/share" className="inline-flex min-h-14 items-center gap-3 rounded-xl border-2 border-ink/15 bg-paper px-6 text-base font-black"><QrCode className="size-5" />Scan to try</Link>
+      </div>
+      <p className="mt-8 text-sm font-bold text-muted">KAKI · Pek Kio, Singapore · AI for real needs</p>
+    </div>
+    <div className="hidden w-64 border-2 border-ink bg-paper p-4 text-center shadow-[10px_10px_0_#f8c84a] sm:block"><Image src={qrCode} unoptimized width={480} height={480} alt="Scan to open KAKI" className="h-auto w-full" /><p className="mt-3 text-sm font-black">Try KAKI now</p></div>
+  </div>;
+}
+
+export function PresentationDeck({ qrCode }: { qrCode: string }) {
+  const [current, setCurrent] = useState(0);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const touchStart = useRef<number | null>(null);
+  const go = useCallback((next: number) => {
+    setCurrent(Math.max(0, Math.min(6, next)));
+    setNotesOpen(false);
+  }, []);
+  const scenes: Scene[] = [
+    { shortTitle: "The belief", duration: 30, note: "Open with the contrast. AI is powerful, but the moment that changes someone’s confidence is often another person sitting beside them. KAKI is built around that human truth.", content: <IntroScene onBegin={() => { setRunning(true); go(1); }} /> },
+    { shortTitle: "The moment", duration: 45, note: "Today I watched an organiser help an older neighbour understand ChatGPT and how she could use it. She did not lack ability. She needed a trusted person, familiar language and permission to try.", content: <WitnessScene /> },
+    { shortTitle: "The opportunity", duration: 35, note: "That moment should not depend on chance. Across Pek Kio, small requests and useful skills exist side by side. KAKI makes those needs visible and approachable.", content: <OpportunityScene /> },
+    { shortTitle: "The product", duration: 50, note: "A resident speaks naturally. AI converts the request into a clear, bounded and safer mission. A neighbour chooses to help. They chat, agree a public meeting point, check in and complete the moment together.", content: <ProductScene /> },
+    { shortTitle: "The AI", duration: 45, note: "AI handles language, structure, matching and simple guidance. It never decides trust for people. Both neighbours keep control, can abandon gracefully and never need to share a password or home address.", content: <AiScene /> },
+    { shortTitle: "The exchange", duration: 45, note: "Intergeneration is not one-way volunteering. A younger neighbour may offer digital confidence. An older neighbour may pass on repair, cooking or local knowledge. Both leave with more than they arrived with.", content: <ValueScene /> },
+    { shortTitle: "The challenge", duration: 35, note: "Close on the distinction: we are not building AI to replace community support. We are using AI to activate the support already living in the neighbourhood. Invite the judges to scan and try it.", content: <ClosingScene qrCode={qrCode} /> },
+  ];
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") { event.preventDefault(); go(current + 1); }
+      if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); go(current - 1); }
+      if (event.key === "Home") { event.preventDefault(); go(0); }
+      if (event.key === "End") { event.preventDefault(); go(scenes.length - 1); }
+      if (event.key.toLowerCase() === "n") setNotesOpen(value => !value);
+      if (event.key === "Escape") setNotesOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [current, go, scenes.length]);
+
+  useEffect(() => {
+    if (!running) return;
+    const timer = window.setInterval(() => setElapsed(value => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [running]);
+
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+  const overTime = elapsed > 300;
+  const cumulativeTarget = sceneDurations.slice(0, current + 1).reduce((sum, value) => sum + value, 0);
+
+  async function toggleFullscreen() {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  }
+
+  return <main className="presentation-shell flex min-h-dvh flex-col overflow-x-hidden bg-cream px-4 pb-3 pt-3 text-ink sm:px-7 sm:pb-5 sm:pt-5 lg:h-dvh lg:overflow-hidden lg:px-10">
+    <header className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/15 pb-3">
+      <Logo />
+      <div className="flex items-center gap-2">
+        <div className={cn("hidden min-w-28 items-center justify-center gap-2 rounded-lg border border-ink/15 bg-paper px-3 py-2 font-mono text-sm font-black sm:flex", overTime && "border-coral text-coral")}>
+          <button onClick={() => setRunning(value => !value)} aria-label={running ? "Pause pitch timer" : "Start pitch timer"}>{running ? <Pause className="size-4" /> : <Play className="size-4" />}</button>
+          <span aria-live="off">{minutes}:{seconds.toString().padStart(2, "0")}</span>
+          <button onClick={() => { setElapsed(0); setRunning(false); }} aria-label="Reset pitch timer"><RotateCcw className="size-4" /></button>
+        </div>
+        <span className="hidden text-sm font-bold text-muted md:block">KAKI · 5 minute pitch</span>
+        <button onClick={() => setNotesOpen(value => !value)} aria-pressed={notesOpen} className="grid size-10 place-items-center rounded-lg border border-ink/15 bg-paper" aria-label="Toggle speaker notes"><StickyNote className="size-4" /></button>
+        <button onClick={() => void toggleFullscreen()} className="grid size-10 place-items-center rounded-lg border border-ink/15 bg-paper" aria-label="Toggle full screen"><Expand className="size-4" /></button>
+      </div>
+    </header>
+
+    <section key={current} className="presentation-scene flex min-h-0 flex-1 flex-col" aria-label={`Scene ${current + 1}: ${scenes[current].shortTitle}`} onTouchStart={event => { touchStart.current = event.changedTouches[0].clientX; }} onTouchEnd={event => { if (touchStart.current === null) return; const distance = event.changedTouches[0].clientX - touchStart.current; if (Math.abs(distance) > 60) go(current + (distance < 0 ? 1 : -1)); touchStart.current = null; }}>
+      {scenes[current].content}
+    </section>
+
+    <footer className="flex shrink-0 items-center gap-3 border-t border-ink/15 pt-3">
+      <div className="w-24 shrink-0"><span className="text-lg font-black text-purple">{String(current + 1).padStart(2, "0")}</span><span className="text-sm font-bold text-muted"> / 07</span></div>
+      <ol className="flex flex-1 gap-1.5" aria-label="Presentation progress">{scenes.map((scene, index) => <li key={scene.shortTitle} className="flex-1"><button onClick={() => go(index)} aria-label={`Go to scene ${index + 1}: ${scene.shortTitle}`} aria-current={index === current ? "step" : undefined} className={cn("h-2 w-full rounded-sm transition-colors", index <= current ? "bg-purple" : "bg-ink/10")} /></li>)}</ol>
+      <div className="flex shrink-0 gap-2">
+        <button onClick={() => go(current - 1)} disabled={current === 0} className="grid size-11 place-items-center rounded-lg border border-ink/15 bg-paper disabled:opacity-30" aria-label="Previous scene"><ArrowLeft className="size-5" /></button>
+        <button onClick={() => { if (!running) setRunning(true); go(current + 1); }} disabled={current === scenes.length - 1} className="grid size-11 place-items-center rounded-lg bg-purple text-white disabled:opacity-30" aria-label="Next scene"><ArrowRight className="size-5" /></button>
+      </div>
+    </footer>
+
+    {notesOpen ? <aside className="fixed inset-x-4 bottom-20 z-50 mx-auto max-w-3xl border-2 border-ink bg-paper p-5 shadow-[10px_10px_0_#f8c84a]" aria-label="Speaker notes">
+      <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.15em] text-purple">Speaker note · {scenes[current].duration} sec</p><p className="mt-2 text-base font-bold leading-relaxed">{scenes[current].note}</p><p className="mt-3 text-xs text-muted">Target by this scene: {Math.floor(cumulativeTarget / 60)}:{(cumulativeTarget % 60).toString().padStart(2, "0")} · Full pitch: {Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, "0")}</p></div><button onClick={() => setNotesOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink text-white" aria-label="Close speaker notes"><X className="size-4" /></button></div>
+    </aside> : null}
+  </main>;
+}
