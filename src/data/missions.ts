@@ -39,9 +39,13 @@ export async function createMission(input: Omit<MissionDraft, "safetyNote"> & { 
   return mapMission(data as unknown as DbMission);
 }
 
-export async function updateMission(id: string, action: "claim" | "start" | "complete", story?: string, consentToShare = false) {
+export async function updateMission(id: string, action: "claim" | "start" | "complete" | "cancel", story?: string, consentToShare = false) {
   const { supabase, userId } = await authenticatedClient();
-  if (action === "claim") {
+  if (action === "cancel") {
+    const { data, error } = await supabase.from("missions").update({ status: "cancelled", cancelled_at: new Date().toISOString() }).eq("id", id).in("status", ["draft","open","flagged","matched","in_progress"]).or(`requester_id.eq.${userId},helper_id.eq.${userId}`).select("id").maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("This request has changed or you are not a participant. Refresh and try again.");
+  } else if (action === "claim") {
     const { data, error } = await supabase.from("missions").update({ helper_id: userId, status: "matched" }).eq("id", id).eq("status", "open").neq("requester_id", userId).select("id").maybeSingle();
     if (error) throw error;
     if (!data) throw new Error("This mission is no longer available to claim.");

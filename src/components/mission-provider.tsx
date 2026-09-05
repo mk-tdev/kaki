@@ -12,6 +12,7 @@ type MissionContextValue = {
   impact: ImpactMetrics;
   addMission: (mission: NewMission) => Promise<Mission>;
   acceptMission: (id: string) => Promise<void>;
+  cancelMission: (id: string) => Promise<void>;
   startMission: (id: string) => Promise<void>;
   completeMission: (id: string, story?: string, consentToShare?: boolean) => Promise<void>;
   refresh: () => Promise<void>;
@@ -79,7 +80,7 @@ export function MissionProvider({ children, profile, initialMissions, initialBlo
     return payload.mission;
   }
 
-  async function updateMission(id: string, action: "claim" | "start" | "complete", story?: string, consentToShare = false) {
+  async function updateMission(id: string, action: "claim" | "start" | "complete" | "cancel", story?: string, consentToShare = false) {
     const response = await fetch(`/api/missions/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, story, consentToShare }) });
     const payload = await response.json() as { error?: string };
     if (!response.ok) throw new Error(response.status === 401 ? "Please sign in to update this mission." : payload.error || "Could not update this mission.");
@@ -93,6 +94,7 @@ export function MissionProvider({ children, profile, initialMissions, initialBlo
     impact,
     addMission,
     acceptMission: (id) => updateMission(id, "claim"),
+    cancelMission: (id) => updateMission(id, "cancel"),
     startMission: (id) => updateMission(id, "start"),
     completeMission: (id, story, consentToShare) => updateMission(id, "complete", story, consentToShare),
     refresh,

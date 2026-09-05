@@ -82,6 +82,38 @@ describe("Guest journey database boundaries",()=>{
     await db.exec("reset role;set role anon;select set_config('request.jwt.claims','{}',false);");
     const publicRows=await db.query("select consent_to_share,story from public.blooms");expect(publicRows.rows).toEqual([{consent_to_share:true,story:"A lovely recipe shared"}]);
   });
+  it("lets either participant cancel, preserves history, and notifies once",async()=>{
+    for (const actor of [requester,helper]) {
+      const created=await admin(`insert into public.missions(requester_id,helper_id,title,original_request,summary,category,status,duration_minutes,location_label,scheduled_at) values('${requester}','${helper}','Cancellation test','Cancellation test','Cancellation test','skills','matched',20,'Public space',now()) returning id`);
+      const id=(created[0].rows[0] as {id:string}).id;
+      await expect(asUser(actor,`update public.missions set status='cancelled',title='Changed content' where id='${id}'`)).rejects.toThrow();
+      await asUser(stranger,`update public.missions set status='cancelled' where id='${id}'`);
+      const unchanged=await asUser(actor,`select status from public.missions where id='${id}'`);
+      expect(unchanged[0].rows[0]).toEqual({status:'matched'});
+      await asUser(actor,`update public.missions set status='cancelled' where id='${id}'`);
+      const other=actor===requester?helper:requester;
+      const state=await asUser(other,`select status,cancelled_at,helper_id from public.missions where id='${id}'`);
+      expect(state[0].rows[0]).toMatchObject({status:'cancelled',helper_id:helper});
+      expect((state[0].rows[0] as {cancelled_at:unknown}).cancelled_at).not.toBeNull();
+      await expect(asUser(actor,`update public.missions set status='cancelled' where id='${id}'`)).rejects.toThrow();
+      await expect(asUser(helper,`update public.missions set status='in_progress' where id='${id}'`)).rejects.toThrow();
+      const notices=await asUser(other,`select title from public.notifications where mission_id='${id}'`);
+      expect(notices[0].rows).toEqual([{title:'Plans changed — no worries'}]);
+      const blooms=await admin(`select id from public.blooms where mission_id='${id}'`);
+      expect(blooms[0].rows).toHaveLength(0);
+    }
+    await expect(asUser(requester,`update public.missions set status='cancelled' where id='${mission}'`)).rejects.toThrow();
+  });
+  it("allows cancellation before matching and during help, but not stranger cancellation",async()=>{
+    for (const status of ['open','in_progress']) {
+      const created=await admin(`insert into public.missions(requester_id,helper_id,title,original_request,summary,category,status,duration_minutes,location_label,scheduled_at) values('${requester}',${status==='open'?'null':`'${helper}'`},'Plans changed','Plans changed','Plans changed','skills','${status}',20,'Public space',now()) returning id`);
+      const id=(created[0].rows[0] as {id:string}).id;
+      if(status==='open') await expect(asUser(stranger,`update public.missions set status='cancelled' where id='${id}'`)).rejects.toThrow();
+      await asUser(status==='open'?requester:helper,`update public.missions set status='cancelled' where id='${id}'`);
+      const result=await asUser(requester,`select status from public.missions where id='${id}'`);
+      expect(result[0].rows[0]).toEqual({status:'cancelled'});
+    }
+  });
   it("cloud switch closes access for existing guest sessions and new signups",async()=>{
     await admin("update public.demo_settings set guest_enabled=false where id=true");
     const hidden=await asUser(requester,"select id from public.missions");expect(hidden[0].rows).toEqual([]);

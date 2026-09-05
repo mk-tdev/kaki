@@ -5,6 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { MeetingSettings } from "./meeting-settings";
 import { JourneyMap } from "./journey-map";
 import { ChatDialog } from "./chat-dialog";
+import { LeaveRequest } from "./leave-request";
 import { demoMissions, profiles } from "@/data/demo";
 
 let root: Root;
@@ -66,4 +67,17 @@ it("opens chat only on demand and focuses the message input", async () => {
   expect(onClose).toHaveBeenCalled();
   await act(() => render(false));
   expect(container.querySelector("dialog")!.open).toBe(false);
+});
+
+it("requires explicit confirmation to leave and supports keeping the plan", async () => {
+  const confirm=vi.fn().mockResolvedValue(true);
+  await act(()=>root.render(createElement(LeaveRequest,{matched:true,busy:false,onConfirm:confirm})));
+  await act(()=>container.querySelector<HTMLButtonElement>('button')!.click());
+  expect(confirm).not.toHaveBeenCalled();
+  expect(container.textContent).toContain('ends the request for both');
+  await act(()=>Array.from(container.querySelectorAll('button')).find(button=>button.textContent==='Keep the plan')!.click());
+  expect(container.querySelector('[aria-label="Confirm cancellation"]')).toBeNull();
+  await act(()=>container.querySelector<HTMLButtonElement>('button')!.click());
+  await act(()=>Array.from(container.querySelectorAll('button')).find(button=>button.textContent==='Yes, cancel request')!.click());
+  expect(confirm).toHaveBeenCalledTimes(1);
 });
