@@ -21,6 +21,8 @@ export default function LandingPage() {
           <a href="#how" className="hover:text-purple">How it works</a>
           <a href="#impact" className="hover:text-purple">Our impact</a>
           <a href="#safety" className="hover:text-purple">Trust & safety</a>
+          <Link href="/ai-use" className="hover:text-purple">AI use</Link>
+          <Link href="/share" className="hover:text-purple">Share</Link>
         </nav>
         <ButtonLink href="/home" variant="secondary" className="min-h-11 px-4">Open KAKI <ArrowRight className="size-4" /></ButtonLink>
       </header>
@@ -80,7 +82,7 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="border-t border-ink/10 px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row"><Logo /><p className="text-center text-sm text-muted">Built for the Pek Kio Community Innovation Space · Singapore</p><div className="flex gap-5"><Link href="/demo" className="text-sm font-black text-muted">View demo</Link><Link href="/home" className="text-sm font-black text-purple">Enter KAKI →</Link></div></div></footer>
+      <footer className="border-t border-ink/10 px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row"><Logo /><p className="text-center text-sm text-muted">Built for the Pek Kio Community Innovation Space · Singapore</p><div className="flex flex-wrap justify-center gap-5"><Link href="/ai-use" className="text-sm font-black text-muted">AI use</Link><Link href="/share" className="text-sm font-black text-muted">Share QR</Link><Link href="/demo" className="text-sm font-black text-muted">View demo</Link><Link href="/home" className="text-sm font-black text-purple">Enter KAKI →</Link></div></div></footer>
     </div>
   );
 }

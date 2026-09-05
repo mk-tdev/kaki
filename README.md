@@ -7,10 +7,11 @@ KAKI is a mobile-first neighbour action network for Pek Kio, Singapore. It turns
 ## Product flows
 
 - Public campaign landing page and downloadable event poster
-- Password-free Supabase authentication and role onboarding
+- Supabase email/password authentication and role onboarding
 - English, Mandarin, Malay and Tamil request entry
 - Browser speech recognition with typed-input fallback
 - OpenAI structured mission generation with Zod validation
+- Live OpenAI assistance suggestions as a resident types
 - Offline-safe local mission generation when no API key is configured
 - Helper mission discovery, search and category filters
 - Explainable matching and three-step volunteer guidance
@@ -43,7 +44,7 @@ Open [http://localhost:5026](http://localhost:5026).
 The application connects directly to the hosted Supabase project configured in
 `.env.local`; starting a local Supabase stack is not required.
 
-Without environment variables, KAKI runs in fully interactive demo mode and persists state in the browser. With Supabase variables configured, the same client switches to the authenticated Postgres-backed API. Without `OPENAI_API_KEY`, mission creation uses deterministic safety-aware local rules.
+The public `/demo` routes contain clearly labelled sample content. Product routes require a real Supabase account and only use cloud-backed records. Without `OPENAI_API_KEY`, live AI suggestions are hidden and mission creation uses clearly labelled, deterministic safety-aware local rules.
 
 ## Connect Supabase
 
@@ -57,7 +58,7 @@ npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push
 ```
 
-The migration is at `supabase/migrations/20260904144939_initial_kaki_schema.sql`. It creates profiles, missions, messages, mission events, availability, blooms and notifications. Every exposed table has RLS enabled. New-table Data API privileges are granted explicitly to account for Supabase’s 2026 API exposure changes.
+The migrations under `supabase/migrations` create profiles, missions, messages, mission events, availability, blooms and notifications. Every exposed table has RLS enabled. New-table Data API privileges are granted explicitly to account for Supabase’s 2026 API exposure changes.
 
 For local Supabase development, start Docker Desktop and run:
 
@@ -72,8 +73,7 @@ npx supabase db reset
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe Supabase key |
-| `SUPABASE_SECRET_KEY` | Reserved for trusted server administration; never exposed to the client |
-| `OPENAI_API_KEY` | Server-only mission generation |
+| `OPENAI_API_KEY` | Server-only suggestions and mission generation |
 | `OPENAI_MODEL` | Optional model override; defaults to `gpt-5-mini` |
 
 ## Quality checks
@@ -98,6 +98,9 @@ npm run build
 | `/organiser` | Operations and safety dashboard |
 | `/profile` | Skills, availability and settings |
 | `/poster` | Campaign poster preview/download |
+| `/demo` | Clearly labelled sample product tour |
+| `/share` | Presentation QR code for the deployed app |
+| `/ai-use` | Transparent runtime and build-time AI explanation |
 
 ## Safety model
 
