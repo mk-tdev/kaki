@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, ArrowRight, Clock3, Languages, LoaderCircle, MapPin, Mic, ShieldCheck, Sparkles, Square } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Clock3, Languages, LoaderCircle, MapPin, ShieldCheck, Sparkles } from "lucide-react";
+import { VoiceRequest } from "@/components/voice-request";
+import { TranslateText } from "@/components/translate-text";
 import { MeetingSettings } from "@/components/meeting-settings";
 import { AiAssistanceSuggestions } from "@/components/ai-assistance-suggestions";
 import { CategoryIcon, categoryMeta } from "@/components/category-icon";
@@ -10,46 +12,19 @@ import { useMissions } from "@/components/mission-provider";
 import { Button } from "@/components/ui/button";
 import type { MissionDraft } from "@/lib/ai/schemas";
 
-type SpeechRecognitionInstance = { lang: string; interimResults: boolean; continuous: boolean; start: () => void; stop: () => void; onresult: ((event: { results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean }> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
-type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
-
 const languages = ["English", "中文", "Bahasa Melayu", "தமிழ்"];
 export default function AskPage() {
   const router = useRouter();
   const { addMission } = useMissions();
   const [request, setRequest] = useState("");
   const [language, setLanguage] = useState("English");
-  const [listening, setListening] = useState(false);
+  const [voiceBusy, setVoiceBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState<MissionDraft | null>(null);
   const [mode, setMode] = useState<"local" | "openai" | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [meetingOffset, setMeetingOffset] = useState(15);
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-
-  useEffect(() => () => { recognitionRef.current?.stop(); }, []);
-
-  function toggleVoice() {
-    if (listening) { recognitionRef.current?.stop(); setListening(false); return; }
-    const browserWindow = window as typeof window & { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor };
-    const Recognition = browserWindow.SpeechRecognition ?? browserWindow.webkitSpeechRecognition;
-    if (!Recognition) { setError("Voice input is not supported in this browser. You can type your request instead."); return; }
-    const recognition = new Recognition();
-    recognition.lang = language === "中文" ? "zh-SG" : language === "Bahasa Melayu" ? "ms-SG" : language === "தமிழ்" ? "ta-SG" : "en-SG";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-    recognition.onresult = (event) => {
-      const transcript = Array.from(event.results).map((result) => result[0].transcript).join(" ");
-      setRequest(transcript.slice(0, 1000));
-    };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => { setListening(false); setError("I could not hear that clearly. Try again or type below."); };
-    recognitionRef.current = recognition;
-    setError(""); setListening(true);
-    try { recognition.start(); } catch { setListening(false); setError("Microphone unavailable. Type your request instead."); }
-  }
-
   async function createDraft() {
     if (request.trim().length < 3) { setError("Tell us a little more so we can make a useful mission."); return; }
     setLoading(true); setError("");
@@ -81,7 +56,7 @@ export default function AskPage() {
 
   if (draft) return <ReviewDraft onLocation={location => setDraft(current => current ? { ...current, location } : current)} meetingOffset={meetingOffset} onMeetingOffset={setMeetingOffset} error={error} draft={draft} mode={mode} publishing={publishing} onBack={() => setDraft(null)} onPublish={() => void publishMission()} />;
 
-  return <div className="mx-auto max-w-3xl"><div className="text-center"><p className="text-xs font-black uppercase tracking-[.18em] text-purple">Create a mission</p><h1 className="mt-3 text-balance text-4xl font-black tracking-[-.06em] sm:text-5xl">What can we do together today?</h1><p className="mx-auto mt-4 max-w-xl text-lg leading-7 text-muted">Speak naturally. KAKI will turn your words into one small, safe request.</p></div><div className="paper-card mt-8 rounded-[36px] p-5 sm:p-8"><div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm font-black text-ink">I’m most comfortable with</p><div className="flex flex-wrap gap-2">{languages.map((item) => <button key={item} onClick={() => setLanguage(item)} className={`min-h-10 rounded-full px-3 text-sm font-bold transition ${language === item ? "bg-purple text-white" : "bg-ink/5 text-muted hover:bg-ink/8"}`}>{item}</button>)}</div></div><div className="mt-8 text-center"><button onClick={toggleVoice} aria-label={listening ? "Stop voice input" : "Start voice input"} aria-pressed={listening} className={`breathe mx-auto grid size-28 place-items-center rounded-full text-white shadow-[0_18px_45px_rgba(109,85,217,.3)] transition ${listening ? "bg-coral" : "bg-purple hover:bg-purple-dark"}`}>{listening ? <Square className="size-9 fill-white" /> : <Mic className="size-11" />}</button><p className="mt-4 font-black text-ink">{listening ? "Listening… tap to stop" : "Tap and tell KAKI"}</p><p className="mt-1 text-sm text-muted">Your browser handles transcription; audio may use its speech service</p></div>{listening ? <div className="mt-5 flex h-10 items-center justify-center gap-1" role="status" aria-label="Listening; transcription appears below">{Array.from({length: 19}, (_, i) => <span key={i} className="voice-bar h-9 w-1.5 rounded-full bg-purple" style={{animationDelay: `${i * 60}ms`}} />)}</div> : null}<div className="my-7 flex items-center gap-3"><span className="h-px flex-1 bg-ink/10" /><span className="text-xs font-black uppercase tracking-[.16em] text-muted">or type</span><span className="h-px flex-1 bg-ink/10" /></div><label className="block"><span className="sr-only">Describe what you need</span><textarea maxLength={1000} value={request} onChange={(event) => setRequest(event.target.value)} rows={5} placeholder="For example: I want to learn how to send photos to my grandson…" className="w-full resize-none rounded-[24px] border border-ink/10 bg-white px-5 py-4 text-lg leading-7 placeholder:text-muted/55" /></label><AiAssistanceSuggestions disabled={loading} request={listening ? "" : request} language={language} onSelect={setRequest} />{error ? <div className="mt-5 flex items-start gap-3 rounded-2xl bg-coral/10 p-4 text-sm font-bold text-[#92372d]"><AlertCircle className="mt-0.5 size-5 shrink-0" />{error}</div> : null}<Button onClick={createDraft} disabled={loading} className="mt-6 min-h-14 w-full text-base">{loading ? <><LoaderCircle className="size-5 animate-spin" />Making this easy…</> : <><Sparkles className="size-5" />Turn this into a mission <ArrowRight className="size-5" /></>}</Button><p className="mt-4 flex items-center justify-center gap-2 text-center text-xs text-muted"><ShieldCheck className="size-4 text-kaki-green" />Sensitive requests are held for organiser review. Not an emergency service.</p></div></div>;
+  return <div className="mx-auto max-w-3xl"><div className="text-center"><p className="text-xs font-black uppercase tracking-[.18em] text-purple">Create a mission</p><h1 className="mt-3 text-balance text-4xl font-black tracking-[-.06em] sm:text-5xl">What can we do together today?</h1><p className="mx-auto mt-4 max-w-xl text-lg leading-7 text-muted">Speak naturally. KAKI will turn your words into one small, safe request.</p></div><div className="paper-card mt-8 rounded-[36px] p-5 sm:p-8"><div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm font-black text-ink">I’m most comfortable with</p><div className="flex flex-wrap gap-2">{languages.map((item) => <button key={item} disabled={voiceBusy || loading} onClick={() => setLanguage(item)} className={`min-h-10 rounded-full px-3 text-sm font-bold transition ${language === item ? "bg-purple text-white" : "bg-ink/5 text-muted hover:bg-ink/8"}`}>{item}</button>)}</div></div><VoiceRequest onText={setRequest} onBusy={setVoiceBusy} disabled={loading} /><div className="my-7 flex items-center gap-3"><span className="h-px flex-1 bg-ink/10" /><span className="text-xs font-black uppercase tracking-[.16em] text-muted">or type</span><span className="h-px flex-1 bg-ink/10" /></div><label className="block"><span className="sr-only">Describe what you need</span><textarea disabled={voiceBusy || loading} maxLength={1000} value={request} onChange={(event) => setRequest(event.target.value)} rows={5} placeholder="For example: I want to learn how to send photos to my grandson…" className="w-full resize-none rounded-[24px] border border-ink/10 bg-white px-5 py-4 text-lg leading-7 placeholder:text-muted/55" /></label><TranslateText text={request} language={language} onUse={setRequest} disabled={voiceBusy || loading} /><AiAssistanceSuggestions disabled={loading || voiceBusy} request={request} language={language} onSelect={setRequest} />{error ? <div className="mt-5 flex items-start gap-3 rounded-2xl bg-coral/10 p-4 text-sm font-bold text-[#92372d]"><AlertCircle className="mt-0.5 size-5 shrink-0" />{error}</div> : null}<Button onClick={createDraft} disabled={loading || voiceBusy} className="mt-6 min-h-14 w-full text-base">{loading ? <><LoaderCircle className="size-5 animate-spin" />Making this easy…</> : <><Sparkles className="size-5" />Turn this into a mission <ArrowRight className="size-5" /></>}</Button><p className="mt-4 flex items-center justify-center gap-2 text-center text-xs text-muted"><ShieldCheck className="size-4 text-kaki-green" />Sensitive requests are held for organiser review. Not an emergency service.</p></div></div>;
 }
 
 function ReviewDraft({ onLocation, meetingOffset, onMeetingOffset, error, draft, mode, publishing, onBack, onPublish }: { onLocation: (location: string) => void; meetingOffset: number; onMeetingOffset: (minutes: number) => void; error: string; draft: MissionDraft; mode: "local" | "openai" | null; publishing: boolean; onBack: () => void; onPublish: () => void }) {

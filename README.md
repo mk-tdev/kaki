@@ -71,6 +71,10 @@ The app always uses Supabase cloud. The isolated PGlite tests run PostgreSQL in 
 | `OPENAI_API_KEY` | Server-only suggestions and mission generation |
 | `OPENAI_MODEL` | Optional model override; defaults to `gpt-5-mini` |
 | `OPENAI_SUGGESTIONS_MODEL` | Independent fast autocomplete model; defaults to `gpt-4.1-nano` |
+| `OPENAI_TRANSCRIPTION_MODEL` | Recorded speech transcription; defaults to `gpt-transcribe` |
+| `OPENAI_TRANSLATION_MODEL` | Request/chat text translation; defaults to `gpt-4.1-mini` |
+
+Voice input records up to 45 seconds (3 MB) using MediaRecorder, then sends the clip through an authenticated, quota-limited server endpoint to OpenAI. KAKI does not persist audio. Microphone use requires HTTPS or localhost and browser permission. No browser speech-recognition service is used. Transcripts are editable. Translation is explicit, preserves the original, and supports English, Chinese, Malay and Tamil. Only the user can apply a translation to their request; chat originals are never overwritten.
 
 ## Quality checks
 

@@ -1,5 +1,35 @@
 @import "tailwindcss";
 
+@layer base {
+  input:not([type="checkbox"]):not([type="radio"]), textarea {
+    appearance: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus-visible, textarea:focus-visible {
+    outline: none;
+    border-color: var(--purple);
+    box-shadow: 0 0 0 4px rgb(109 85 217 / .14);
+  }
+  input:disabled, textarea:disabled { cursor: not-allowed; opacity: .55; }
+  input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--coral); }
+  @media (max-width: 640px) {
+    input:not([type="checkbox"]):not([type="radio"]), textarea { font-size: 16px; }
+  }
+}
+.kaki-checkbox {
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+  border: 2px solid rgb(109 85 217 / .4);
+  border-radius: .5rem;
+  background: var(--paper);
+  cursor: pointer;
+}
+.kaki-checkbox:checked { background: var(--purple); border-color: var(--purple); }
+.kaki-checkbox:focus-visible { outline: 3px solid rgb(109 85 217 / .3); outline-offset: 3px; }
+.kaki-checkbox:disabled { cursor: not-allowed; opacity: .5; }
+
 @keyframes kaki-reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes kaki-walk { 0%,100% { margin-top: 0; } 50% { margin-top: -7px; } }
 @keyframes kaki-bloom { from { opacity: 0; scale: .4; rotate: -25deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
