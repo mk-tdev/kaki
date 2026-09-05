@@ -3,26 +3,22 @@
 import { useEffect, useState } from "react";
 import { Flower2, LoaderCircle } from "lucide-react";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 
 // Strict Mode and concurrent mounts share one request; creation is POST only.
 let entry: Promise<void> | undefined;
 function enter() {
-  entry ??= fetch("/api/auth/guest", { method: "POST" }).then(async response => {
+  const join = async () => {
+    const response = await fetch("/api/auth/guest", { method: "POST" });
     if (!response.ok) {
       const payload = await response.json();
       throw new Error(payload.error || "Could not join. Please try again.");
     }
-    async function signIn() {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getClaims();
-      if (data?.claims?.sub) return;
-      const { error } = await supabase.auth.signInAnonymously();
-      if (error) throw new Error(error.status === 429 ? "Too many people are joining from this network. Try mobile data or wait a little." : "Guest entry is unavailable. Ask the demo host to check anonymous sign-ins.");
-    }
-    if (navigator.locks) await navigator.locks.request("kaki-guest-entry", signIn);
-    else await signIn();
-  }).catch(error => { entry = undefined; throw error; });
+  };
+  // Serialize across browser tabs too; the next POST sees the existing cookie.
+  entry ??= (async () => {
+    if (navigator.locks) await navigator.locks.request("kaki-guest-entry", join);
+    else await join();
+  })().catch(error => { entry = undefined; throw error; });
   return entry;
 }
 

@@ -7,7 +7,7 @@ import { Globe2, LogOut, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { Button } from "@/components/ui/button";
 import { useMissions } from "@/components/mission-provider";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/auth/client";
 import type { Profile } from "@/types/kaki";
 
 const roleLabels: Record<Profile["role"], string> = { resident: "Resident", helper: "Helper", organiser: "Organiser" };

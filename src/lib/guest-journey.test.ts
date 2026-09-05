@@ -14,16 +14,8 @@ async function asUser(id:string,sql:string){
 }
 async function admin(sql:string){await db.exec("reset role; select set_config('request.jwt.claims','{}',false);");return db.exec(sql);}
 beforeAll(async()=>{
-  await db.exec(`create role anon; create role authenticated; create schema auth;
-    create table auth.users(id uuid primary key, raw_user_meta_data jsonb default '{}', is_anonymous boolean default false);
-    create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
-    create function auth.uid() returns uuid language sql stable as $$ select (auth.jwt()->>'sub')::uuid $$;
-    grant usage on schema auth to anon,authenticated;
-    grant execute on all functions in schema auth to anon,authenticated;`);
-  for(const file of (await readdir("supabase/migrations")).filter(f=>f.endsWith(".sql")).sort()){
-    // PGlite has no replication transport. All RLS and trigger SQL stays intact.
-    const sql=(await readFile(`supabase/migrations/${file}`,"utf8")).replace(/alter publication supabase_realtime add table public\.\w+;/g,"");
-    try { await db.exec(sql); } catch (error) { const detail=error as {message:string;position?:string;internalQuery?:string}; throw new Error(`${file}: ${detail.message}; position ${detail.position}; internal ${detail.internalQuery ?? ""}`); }
+  for(const file of (await readdir("db/migrations")).filter(f=>f.endsWith(".sql")).sort()) {
+    await db.exec(await readFile(`db/migrations/${file}`,"utf8"));
   }
   await admin(`insert into auth.users(id,is_anonymous) values('${requester}',true),('${helper}',true),('${stranger}',true);`);
 },30000);

@@ -6,7 +6,6 @@ import { Bell, Flower2, Home, Plus, Search, ShieldCheck, UserRound } from "lucid
 import { useEffect, useState, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/kaki";
 
 const navItems = [
@@ -22,15 +21,18 @@ export function AppShell({ children, profile, unreadNotifications }: { children:
   const [unread, setUnread] = useState(unreadNotifications);
 
   useEffect(() => {
-    const supabase = createClient();
     const refreshUnread = async () => {
       const response = await fetch("/api/notifications", { cache: "no-store" });
       if (!response.ok) return;
       const payload = await response.json() as { notifications?: { readAt?: string }[] };
       setUnread(payload.notifications?.filter((item) => !item.readAt).length ?? 0);
     };
-    const channel = supabase.channel(`kaki-notifications-${profile.id}`).on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => void refreshUnread().catch(() => undefined)).subscribe();
-    return () => { void supabase.removeChannel(channel); };
+
+    const refresh = () => { if (document.visibilityState === "visible") void refreshUnread().catch(() => undefined); };
+    refresh();
+    const timer = window.setInterval(refresh, 5000);
+    window.addEventListener("focus", refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", refresh); };
   }, [profile.id]);
   return (
     <div className="min-h-screen">

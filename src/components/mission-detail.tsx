@@ -14,7 +14,6 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { JourneyMap } from "@/components/journey-map";
 import { MatchReveal } from "@/components/match-reveal";
 import { BloomCelebration } from "@/components/bloom-celebration";
-import { createClient } from "@/lib/supabase/client";
 import type { CommunityMessage, MissionPresence } from "@/types/kaki";
 
 export function MissionDetail({ missionId }: { missionId: string }) {
@@ -43,13 +42,10 @@ export function MissionDetail({ missionId }: { missionId: string }) {
     if(!connected)return;
     const sync=()=>{if(document.visibilityState==="visible")void refreshCoordination().catch(error=>setCoordinationError(error.message));};
     sync();
-    const supabase=createClient();
-    const channel=supabase.channel(`coordination-${missionId}`)
-      .on("postgres_changes",{event:"*",schema:"public",table:"mission_presence",filter:`mission_id=eq.${missionId}`},sync)
-      .on("postgres_changes",{event:"*",schema:"public",table:"mission_messages",filter:`mission_id=eq.${missionId}`},sync).subscribe();
+
     const sequenceRef=sequence;
     const timer=window.setInterval(sync,4000);window.addEventListener("focus",sync);
-    return()=>{++sequenceRef.current;window.clearInterval(timer);window.removeEventListener("focus",sync);void supabase.removeChannel(channel);};
+    return()=>{++sequenceRef.current;window.clearInterval(timer);window.removeEventListener("focus",sync);};
   },[connected,missionId,refreshCoordination]);
 
   if(!mission)return <div className="paper-card mx-auto max-w-xl rounded-2xl p-10 text-center"><h1 className="text-2xl font-black">This mission isn’t available</h1><p className="mt-3 text-muted">Another neighbour may have claimed it, or it is private.</p><ButtonLink href="/discover" className="mt-6">Find another moment</ButtonLink></div>;

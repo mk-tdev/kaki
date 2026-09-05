@@ -1,24 +1,9 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
-import type { Database } from "@/types/database";
-
-export async function proxy(request: NextRequest) {
-  if (!hasSupabaseEnv()) return NextResponse.next({ request });
-  const { url, publishableKey } = getSupabaseEnv();
-  let response = NextResponse.next({ request });
-  const supabase = createServerClient<Database>(url, publishableKey, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll: (cookiesToSet) => {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-      },
-    },
-  });
-  await supabase.auth.getClaims();
-  return response;
+import { isSameOrigin } from "@/lib/auth/origin";
+export function proxy(request: NextRequest) {
+  if (!["GET","HEAD","OPTIONS"].includes(request.method) && !isSameOrigin(request)) {
+    return NextResponse.json({error:"Open KAKI to make this change."},{status:403});
+  }
+  return NextResponse.next();
 }
-
-export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"] };
+export const config = { matcher: "/api/:path*" };
