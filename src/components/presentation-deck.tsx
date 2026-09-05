@@ -14,10 +14,7 @@ import {
   MapPin,
   MessageCircle,
   Mic,
-  Pause,
-  Play,
   QrCode,
-  RotateCcw,
   StickyNote,
   Users,
   X,
@@ -32,9 +29,6 @@ type Scene = {
   note: string;
   content: ReactNode;
 };
-
-const sceneDurations = [30, 45, 35, 50, 45, 45, 35];
-const totalDuration = sceneDurations.reduce((sum, duration) => sum + duration, 0);
 
 function IntroScene({ onBegin }: { onBegin: () => void }) {
   return <div className="grid min-h-0 flex-1 items-center gap-6 lg:grid-cols-[.88fr_1.12fr]">
@@ -148,15 +142,13 @@ function ClosingScene({ qrCode }: { qrCode: string }) {
 export function PresentationDeck({ qrCode }: { qrCode: string }) {
   const [current, setCurrent] = useState(0);
   const [notesOpen, setNotesOpen] = useState(false);
-  const [running, setRunning] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
   const touchStart = useRef<number | null>(null);
   const go = useCallback((next: number) => {
     setCurrent(Math.max(0, Math.min(6, next)));
     setNotesOpen(false);
   }, []);
   const scenes: Scene[] = [
-    { shortTitle: "The belief", duration: 30, note: "Open with the contrast. AI is powerful, but the moment that changes someone’s confidence is often another person sitting beside them. KAKI is built around that human truth.", content: <IntroScene onBegin={() => { setRunning(true); go(1); }} /> },
+    { shortTitle: "The belief", duration: 30, note: "Open with the contrast. AI is powerful, but the moment that changes someone’s confidence is often another person sitting beside them. KAKI is built around that human truth.", content: <IntroScene onBegin={() => go(1)} /> },
     { shortTitle: "The moment", duration: 45, note: "Today I watched an organiser help an older neighbour understand ChatGPT and how she could use it. She did not lack ability. She needed a trusted person, familiar language and permission to try.", content: <WitnessScene /> },
     { shortTitle: "The opportunity", duration: 35, note: "That moment should not depend on chance. Across Pek Kio, small requests and useful skills exist side by side. KAKI makes those needs visible and approachable.", content: <OpportunityScene /> },
     { shortTitle: "The product", duration: 50, note: "A resident speaks naturally. AI converts the request into a clear, bounded and safer mission. A neighbour chooses to help. They chat, agree a public meeting point, check in and complete the moment together.", content: <ProductScene /> },
@@ -177,17 +169,6 @@ export function PresentationDeck({ qrCode }: { qrCode: string }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [current, go, scenes.length]);
 
-  useEffect(() => {
-    if (!running) return;
-    const timer = window.setInterval(() => setElapsed(value => value + 1), 1000);
-    return () => window.clearInterval(timer);
-  }, [running]);
-
-  const minutes = Math.floor(elapsed / 60);
-  const seconds = elapsed % 60;
-  const overTime = elapsed > 300;
-  const cumulativeTarget = sceneDurations.slice(0, current + 1).reduce((sum, value) => sum + value, 0);
-
   async function toggleFullscreen() {
     if (document.fullscreenElement) await document.exitFullscreen();
     else await document.documentElement.requestFullscreen();
@@ -197,12 +178,7 @@ export function PresentationDeck({ qrCode }: { qrCode: string }) {
     <header className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/15 pb-3">
       <Logo />
       <div className="flex items-center gap-2">
-        <div className={cn("hidden min-w-28 items-center justify-center gap-2 rounded-lg border border-ink/15 bg-paper px-3 py-2 font-mono text-sm font-black sm:flex", overTime && "border-coral text-coral")}>
-          <button onClick={() => setRunning(value => !value)} aria-label={running ? "Pause pitch timer" : "Start pitch timer"}>{running ? <Pause className="size-4" /> : <Play className="size-4" />}</button>
-          <span aria-live="off">{minutes}:{seconds.toString().padStart(2, "0")}</span>
-          <button onClick={() => { setElapsed(0); setRunning(false); }} aria-label="Reset pitch timer"><RotateCcw className="size-4" /></button>
-        </div>
-        <span className="hidden text-sm font-bold text-muted md:block">KAKI · 5 minute pitch</span>
+        <Link href="/self-reading" className="hidden text-sm font-black text-muted hover:text-purple md:block">Read the full idea</Link>
         <button onClick={() => setNotesOpen(value => !value)} aria-pressed={notesOpen} className="grid size-10 place-items-center rounded-lg border border-ink/15 bg-paper" aria-label="Toggle speaker notes"><StickyNote className="size-4" /></button>
         <button onClick={() => void toggleFullscreen()} className="grid size-10 place-items-center rounded-lg border border-ink/15 bg-paper" aria-label="Toggle full screen"><Expand className="size-4" /></button>
       </div>
@@ -218,13 +194,13 @@ export function PresentationDeck({ qrCode }: { qrCode: string }) {
         <ol className="flex min-h-40 flex-1 flex-col gap-1.5" aria-label="Presentation progress">{scenes.map((scene, index) => <li key={scene.shortTitle} className="min-h-4 flex-1"><button onClick={() => go(index)} aria-label={`Go to scene ${index + 1}: ${scene.shortTitle}`} aria-current={index === current ? "step" : undefined} className={cn("h-full w-2 rounded-sm transition-colors sm:w-2.5", index <= current ? "bg-purple" : "bg-ink/10")} /></li>)}</ol>
         <div className="mt-3 flex flex-col gap-2">
           <button onClick={() => go(current - 1)} disabled={current === 0} className="grid size-10 place-items-center rounded-lg border border-ink/15 bg-paper disabled:opacity-30 sm:size-11" aria-label="Previous scene"><ArrowLeft className="size-5" /></button>
-          <button onClick={() => { if (!running) setRunning(true); go(current + 1); }} disabled={current === scenes.length - 1} className="grid size-10 place-items-center rounded-lg bg-purple text-white disabled:opacity-30 sm:size-11" aria-label="Next scene"><ArrowRight className="size-5" /></button>
+          <button onClick={() => go(current + 1)} disabled={current === scenes.length - 1} className="grid size-10 place-items-center rounded-lg bg-purple text-white disabled:opacity-30 sm:size-11" aria-label="Next scene"><ArrowRight className="size-5" /></button>
         </div>
       </nav>
     </div>
 
     {notesOpen ? <aside className="fixed bottom-4 left-4 right-16 z-50 mx-auto max-w-3xl border-2 border-ink bg-paper p-5 shadow-[10px_10px_0_#f8c84a] sm:right-24" aria-label="Speaker notes">
-      <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.15em] text-purple">Speaker note · {scenes[current].duration} sec</p><p className="mt-2 text-base font-bold leading-relaxed">{scenes[current].note}</p><p className="mt-3 text-xs text-muted">Target by this scene: {Math.floor(cumulativeTarget / 60)}:{(cumulativeTarget % 60).toString().padStart(2, "0")} · Full pitch: {Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, "0")}</p></div><button onClick={() => setNotesOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink text-white" aria-label="Close speaker notes"><X className="size-4" /></button></div>
+      <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.15em] text-purple">Speaker note · {scenes[current].shortTitle}</p><p className="mt-2 text-base font-bold leading-relaxed">{scenes[current].note}</p></div><button onClick={() => setNotesOpen(false)} className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink text-white" aria-label="Close speaker notes"><X className="size-4" /></button></div>
     </aside> : null}
   </main>;
 }

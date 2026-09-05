@@ -19,17 +19,19 @@ afterEach(async () => {
   container.remove();
 });
 
-it("navigates the pitch and exposes timed speaker notes", async () => {
+it("navigates the pitch and exposes speaker notes without a timer", async () => {
   await act(() => root.render(createElement(PresentationDeck, { qrCode: "data:image/png;base64,aGVsbG8=" })));
   expect(container.textContent).toContain("AI can answer");
   expect(container.querySelectorAll('[aria-label^="Go to scene"]')).toHaveLength(7);
+  expect(container.textContent).not.toContain("5 minute pitch");
+  expect(container.querySelector('[aria-label="Start pitch timer"]')).toBeNull();
 
   await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" })));
   expect(container.textContent).toContain("Today, I saw the idea.");
 
   await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "n" })));
   expect(container.querySelector('[aria-label="Speaker notes"]')).not.toBeNull();
-  expect(container.textContent).toContain("Full pitch: 4:45");
+  expect(container.textContent).toContain("Speaker note");
 
   await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })));
   expect(container.querySelector('[aria-label="Speaker notes"]')).toBeNull();

@@ -3,7 +3,7 @@ import QRCode from "qrcode";
 import { PresentationDeck } from "@/components/presentation-deck";
 
 export const metadata: Metadata = {
-  title: "KAKI — 5 minute pitch",
+  title: "KAKI presentation",
   description: "How AI can activate intergenerational neighbour connections in Pek Kio.",
 };
 
