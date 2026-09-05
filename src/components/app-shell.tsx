@@ -29,7 +29,7 @@ export function AppShell({ children, profile, unreadNotifications }: { children:
       const payload = await response.json() as { notifications?: { readAt?: string }[] };
       setUnread(payload.notifications?.filter((item) => !item.readAt).length ?? 0);
     };
-    const channel = supabase.channel(`kaki-notifications-${profile.id}`).on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => void refreshUnread()).subscribe();
+    const channel = supabase.channel(`kaki-notifications-${profile.id}`).on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => void refreshUnread().catch(() => undefined)).subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [profile.id]);
   return (
@@ -38,7 +38,7 @@ export function AppShell({ children, profile, unreadNotifications }: { children:
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6">
           <Logo />
           <nav className="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
-            {navItems.filter((item) => !item.primary).map(({ href, label, Icon }) => {
+            {navItems.map(({ href, label, Icon }) => {
               const active = pathname === href || pathname.startsWith(`${href}/`);
               return <Link key={href} href={href} className={cn("flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition", active ? "bg-white text-purple shadow-sm" : "text-muted hover:bg-white/60 hover:text-ink")}><Icon className="size-4" />{label}</Link>;
             })}
@@ -49,7 +49,7 @@ export function AppShell({ children, profile, unreadNotifications }: { children:
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6 md:pb-12 md:pt-9">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6 md:pb-12 md:pt-9">{profile.isGuest ? <div className="mb-6 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-purple/8 px-4 py-3 text-xs text-purple-dark"><span><strong>Guest · {profile.name}</strong> — jump in and make a connection.</span><Link href="/profile" className="font-black underline underline-offset-4">Optional details</Link><p className="w-full text-[11px] text-muted">Keep this browser open. Signing out or clearing browser data loses your temporary identity. Guests are not identity-verified.</p></div> : null}{children}</main>
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-50 border-t border-ink/10 bg-paper/95 px-3 pt-2 backdrop-blur-xl md:hidden" aria-label="Mobile navigation">
         <div className="mx-auto grid max-w-md grid-cols-5 items-end">
           {navItems.map(({ href, label, Icon, primary }) => {

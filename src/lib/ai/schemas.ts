@@ -26,7 +26,7 @@ export const missionCreateSchema = missionDraftSchema.omit({ safetyNote: true })
 export const missionUpdateSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("claim") }),
   z.object({ action: z.literal("start") }),
-  z.object({ action: z.literal("complete"), story: z.string().max(500).optional(), consentToShare: z.boolean().default(false) }),
+  z.object({ action: z.literal("complete"), story: z.string().trim().max(500).refine(value => value.length === 0 || value.length >= 3).optional(), consentToShare: z.boolean().default(false) }),
 ]);
 
 export type MissionDraft = z.infer<typeof missionDraftSchema>;

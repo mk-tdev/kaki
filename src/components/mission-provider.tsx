@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Bloom, ImpactMetrics, Mission, Profile } from "@/types/kaki";
 
@@ -15,6 +15,7 @@ type MissionContextValue = {
   startMission: (id: string) => Promise<void>;
   completeMission: (id: string, story?: string, consentToShare?: boolean) => Promise<void>;
   refresh: () => Promise<void>;
+  syncError: string;
 };
 
 const MissionContext = createContext<MissionContextValue | null>(null);
@@ -27,30 +28,40 @@ export function MissionProvider({ children, profile, initialMissions, initialBlo
 }) {
   const [missions, setMissions] = useState(initialMissions);
   const [blooms, setBlooms] = useState(initialBlooms);
+  const [syncError, setSyncError] = useState("");
+  const refreshId = useRef(0);
 
   const refresh = useCallback(async () => {
+    const id = ++refreshId.current;
     const [missionsResponse, bloomsResponse] = await Promise.all([
       fetch("/api/missions", { cache: "no-store" }),
       fetch("/api/blooms", { cache: "no-store" }),
     ]);
-    if (missionsResponse.status === 401 || bloomsResponse.status === 401) return;
+    if (missionsResponse.status === 401 || bloomsResponse.status === 401) throw new Error("Your session has ended. Refresh to rejoin.");
     if (!missionsResponse.ok || !bloomsResponse.ok) throw new Error("Could not refresh community activity.");
     const [missionPayload, bloomPayload] = await Promise.all([
       missionsResponse.json() as Promise<{ missions: Mission[] }>,
       bloomsResponse.json() as Promise<{ blooms: Bloom[] }>,
     ]);
-    setMissions(missionPayload.missions);
-    setBlooms(bloomPayload.blooms);
+    if (id === refreshId.current) {
+      setMissions(missionPayload.missions);
+      setBlooms(bloomPayload.blooms);
+      setSyncError("");
+    }
   }, []);
 
   useEffect(() => {
     const supabase = createClient();
+    const sync = () => { if (document.visibilityState === "visible") void refresh().catch(() => setSyncError("Connection interrupted. Reconnecting…")); };
     const channel = supabase
       .channel("kaki-live-product")
-      .on("postgres_changes", { event: "*", schema: "public", table: "missions" }, () => void refresh())
-      .on("postgres_changes", { event: "*", schema: "public", table: "blooms" }, () => void refresh())
+      .on("postgres_changes", { event: "*", schema: "public", table: "missions" }, sync)
+      .on("postgres_changes", { event: "*", schema: "public", table: "blooms" }, sync)
       .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    const interval = window.setInterval(sync, 5000);
+    window.addEventListener("focus", sync);
+    window.addEventListener("online", sync);
+    return () => { window.clearInterval(interval); window.removeEventListener("focus", sync); window.removeEventListener("online", sync); void supabase.removeChannel(channel); };
   }, [refresh]);
 
   const impact = useMemo<ImpactMetrics>(() => ({
@@ -85,6 +96,7 @@ export function MissionProvider({ children, profile, initialMissions, initialBlo
     startMission: (id) => updateMission(id, "start"),
     completeMission: (id, story, consentToShare) => updateMission(id, "complete", story, consentToShare),
     refresh,
+    syncError,
   };
 
   return <MissionContext.Provider value={value}>{children}</MissionContext.Provider>;

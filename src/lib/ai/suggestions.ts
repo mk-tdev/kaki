@@ -11,7 +11,7 @@ export const assistanceSuggestionsSchema = z.object({
 export async function generateAssistanceSuggestions(partialRequest: string, language: string) {
   if (!process.env.OPENAI_API_KEY) throw new Error("OpenAI is not configured");
 
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 12_000 });
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 20_000, maxRetries: 0 });
   const response = await client.responses.parse({
     model: process.env.OPENAI_MODEL || "gpt-5-mini",
     input: [

@@ -6,6 +6,7 @@ const profileUpdateSchema = z.object({
   fullName: z.string().trim().min(2).max(80),
   role: z.enum(["resident", "helper"]),
   preferredLanguage: z.string().trim().min(2).max(80),
+  skills: z.array(z.string().trim().min(2).max(60)).max(8).optional(),
 });
 
 function errorResponse(error: unknown, fallback: string) {

@@ -78,7 +78,7 @@ export default function LandingPage() {
         <section id="safety" className="mx-auto mb-24 max-w-7xl px-5 sm:px-8">
           <div className="grain grid overflow-hidden rounded-[40px] bg-purple text-white lg:grid-cols-[.8fr_1.2fr]">
             <div className="p-8 sm:p-12"><ShieldCheck className="size-12 text-sun" /><h2 className="mt-6 text-4xl font-black tracking-[-.055em]">Safe by design.<br />Human by nature.</h2><p className="mt-5 max-w-md text-lg leading-8 text-white/72">AI helps organise. People make the decisions. Sensitive needs are always reviewed by a trained community organiser.</p></div>
-            <div className="grid gap-3 bg-white/8 p-6 sm:grid-cols-2 sm:p-10"><Safety label="Verified community profiles" /><Safety label="Approved public meeting points" /><Safety label="No home addresses shared" /><Safety label="Clear organiser escalation" /><Safety label="Explainable matching" /><Safety label="Consent-led story sharing" /></div>
+            <div className="grid gap-3 bg-white/8 p-6 sm:grid-cols-2 sm:p-10"><Safety label="Clear verification status" /><Safety label="Public-place meeting guidance" /><Safety label="No location tracking" /><Safety label="Sensitive requests held for review" /><Safety label="AI-assisted introductions" /><Safety label="Consent-led story sharing" /></div>
           </div>
         </section>
       </main>

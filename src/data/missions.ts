@@ -50,14 +50,13 @@ export async function updateMission(id: string, action: "claim" | "start" | "com
     if (error) throw error;
     if (!data) throw new Error("Only the assigned Kaki can start a matched mission.");
   } else {
+    // Save only the helper's own reflection/consent. The database derives joint
+    // consent and creates the Bloom atomically with the completed transition.
+    const { error: presenceError } = await supabase.from("mission_presence").update({ reflection: story || "", consent_to_share: consentToShare }).eq("mission_id", id).eq("user_id", userId);
+    if (presenceError) throw presenceError;
     const completedAt = new Date().toISOString();
     const { data: mission, error } = await supabase.from("missions").update({ status: "completed", completed_at: completedAt }).eq("id", id).eq("helper_id", userId).eq("status", "in_progress").select("id,title,category,requester_id,helper_id").maybeSingle();
     if (error) throw error;
     if (!mission) throw new Error("Only the assigned Kaki can complete a mission in progress.");
-    const participantIds = mission.helper_id ? [mission.requester_id, mission.helper_id] : [mission.requester_id];
-    const { data: participants } = await supabase.from("profiles").select("full_name").in("id", participantIds);
-    const names = participants?.map((profile) => profile.full_name.split(" ").at(-1) ?? profile.full_name) ?? [];
-    const { error: bloomError } = await supabase.from("blooms").insert({ mission_id: id, category: mission.category, title: mission.title, story: story || "Two neighbours shared one small, meaningful moment.", participant_names: names, consent_to_share: consentToShare });
-    if (bloomError) throw bloomError;
   }
 }

@@ -44,13 +44,16 @@ export async function getCurrentProfile() {
   const { supabase, userId } = await authenticatedClient();
   const { data, error } = await supabase.from("profiles").select(profileSelect).eq("id", userId).single();
   if (error) throw error;
-  return mapProfile(data as ProfileRow);
+  const profile = mapProfile(data as ProfileRow);
+  const { data: auth } = await supabase.auth.getClaims();
+  return { ...profile, isGuest: auth?.claims?.is_anonymous === true };
 }
 
 export async function updateCurrentProfile(input: {
   fullName: string;
   role: Exclude<UserRole, "organiser">;
   preferredLanguage: string;
+  skills?: string[];
 }) {
   const { supabase, userId } = await authenticatedClient();
   const { data, error } = await supabase
@@ -61,6 +64,7 @@ export async function updateCurrentProfile(input: {
       preferred_language: input.preferredLanguage,
       spoken_languages: [input.preferredLanguage],
       onboarded_at: new Date().toISOString(),
+      ...(input.skills ? { skills: input.skills } : {}),
     })
     .eq("id", userId)
     .select(profileSelect)

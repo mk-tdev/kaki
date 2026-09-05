@@ -12,5 +12,10 @@ export async function POST(request: Request) {
     const payload = missionCreateSchema.safeParse(await request.json());
     if (!payload.success) return NextResponse.json({ error: "Invalid mission details." }, { status: 400 });
     return NextResponse.json({ mission: await createMission(payload.data) }, { status: 201 });
-  } catch (error) { const unauthorized = error instanceof Error && error.message === "Unauthorized"; return NextResponse.json({ error: unauthorized ? "Unauthorized" : "Could not create the mission." }, { status: unauthorized ? 401 : 500 }); }
+  } catch (error) {
+    const message = error && typeof error === "object" && "message" in error ? String(error.message) : "";
+    const unauthorized = message === "Unauthorized";
+    const limited = message.includes("three requests every 15 minutes");
+    return NextResponse.json({ error: unauthorized ? "Unauthorized" : limited ? "You’ve posted three requests. Please wait 15 minutes before asking again." : "Could not create the mission." }, { status: unauthorized ? 401 : limited ? 429 : 500 });
+  }
 }

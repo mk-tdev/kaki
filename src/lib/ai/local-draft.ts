@@ -1,6 +1,6 @@
 import type { MissionDraft } from "@/lib/ai/schemas";
 
-const sensitivePattern = /suicide|self[- ]?harm|kill myself|abuse|violence|emergency|chest pain|cannot breathe|medical diagnosis/i;
+const sensitivePattern = /suicide|self[- ]?harm|kill myself|abuse|violence|emergency|chest pain|cannot breathe|medical diagnosis|money transfer|bank transfer|password|otp|private.home|my home|electrical wiring|mains|live wire/i;
 
 export function createLocalDraft(request: string, language: string): MissionDraft {
   const normalized = request.toLowerCase();

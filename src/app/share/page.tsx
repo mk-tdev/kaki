@@ -2,19 +2,22 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { ArrowLeft, QrCode, ScanLine, Share2, Sparkles } from "lucide-react";
+import { ArrowRight, HeartHandshake, Sparkles } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { ShareActions } from "@/components/share-actions";
+import { guestModeEnabled } from "@/lib/guest-mode";
 
-const appUrl = "https://kaki-dun.vercel.app/";
-
-export const metadata: Metadata = {
-  title: "Scan to join",
-  description: "Scan the KAKI QR code to open the live Pek Kio community app.",
-};
-
-export default async function SharePage() {
-  const qrCode = await QRCode.toDataURL(appUrl, { width: 720, margin: 2, errorCorrectionLevel: "H", color: { dark: "#211D35", light: "#FFFDF7" } });
-
-  return <main className="min-h-screen px-5 py-7 sm:px-8"><div className="mx-auto max-w-6xl"><header className="flex items-center justify-between"><Logo /><Link href="/" className="inline-flex items-center gap-2 text-sm font-black text-muted hover:text-purple"><ArrowLeft className="size-4" />Back home</Link></header><section className="mt-8 grid overflow-hidden rounded-[42px] bg-ink shadow-[0_30px_90px_rgba(33,29,53,.25)] lg:grid-cols-[.9fr_1.1fr]"><div className="grain relative flex flex-col justify-center p-8 text-white sm:p-12"><div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[.14em] text-sun"><Share2 className="size-4" />Live hackathon demo</div><h1 className="mt-6 text-balance text-5xl font-black leading-[.93] tracking-[-.065em] sm:text-7xl">Scan.<br /><span className="text-mint">Join the kampung.</span></h1><p className="mt-6 max-w-md text-lg leading-8 text-white/65">Point your phone camera at the QR code to open the real KAKI app—no URL typing needed.</p><div className="mt-8 flex items-center gap-3 rounded-2xl bg-white/8 p-4 text-sm text-white/70"><Sparkles className="size-5 shrink-0 text-sun" />Built for Pek Kio Community Innovation Space, Singapore.</div><div className="absolute -bottom-24 -left-20 size-72 rounded-full border-[52px] border-white/[.04]" /></div><div className="bg-paper p-6 sm:p-10"><div className="mx-auto max-w-md"><div className="relative mx-auto aspect-square w-full rounded-[36px] border border-ink/10 bg-white p-5 shadow-[0_20px_60px_rgba(48,39,83,.12)]"><Image src={qrCode} alt={`QR code for ${appUrl}`} fill unoptimized sizes="448px" className="rounded-[28px] object-contain p-4" /><span className="absolute left-1/2 top-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-[20px] border-4 border-white bg-purple text-white shadow-lg"><QrCode className="size-8" /></span><span className="pointer-events-none absolute inset-3 rounded-[28px] border-2 border-dashed border-purple/15" /></div><div className="mt-6 text-center"><div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[.15em] text-purple"><ScanLine className="size-4" />Camera → Scan → Open</div><p className="mt-3 break-all text-lg font-black">kaki-dun.vercel.app</p><p className="mt-1 text-sm text-muted">Works on iPhone and Android</p></div><div className="mt-6"><ShareActions url={appUrl} /></div></div></div></section><nav className="mt-6 flex flex-wrap justify-center gap-5 text-sm font-black"><Link href="/demo" className="text-purple">View guided demo</Link><Link href="/ai-use" className="text-purple">See how AI is used</Link><Link href="/register" className="text-purple">Create an account</Link></nav></div></main>;
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title:"Two phones. One kampung.", description:"Scan to ask for help or become a Kaki in Pek Kio." };
+const entries = [
+  {path:"ask",title:"I need a little help",subtitle:"One small ask can start a connection.",label:"PHONE 01 · ASK",colour:"bg-purple",icon:Sparkles},
+  {path:"discover",title:"I can lend a hand",subtitle:"Choose a neighbour. Make their day.",label:"PHONE 02 · HELP",colour:"bg-[#21634d]",icon:HeartHandshake},
+];
+export default async function SharePage(){
+  const [enabled,codes]=await Promise.all([guestModeEnabled(),Promise.all(entries.map(entry=>QRCode.toDataURL(`https://kaki-dun.vercel.app/${entry.path}`,{width:640,margin:4,errorCorrectionLevel:"M",color:{dark:"#211D35",light:"#ffffff"}})))]);
+  return <main className="mx-auto min-h-screen max-w-7xl px-5 py-7 sm:px-8"><header className="flex items-center justify-between"><Logo/><Link className="text-sm font-black text-purple" href="/live">Open live Bloom wall ↗</Link></header>
+    <div className="mx-auto mb-8 mt-10 max-w-3xl text-center"><p className="text-xs font-black uppercase tracking-[.2em] text-purple">Pek Kio · AI for real needs</p><h1 className="mt-4 text-5xl font-black leading-none tracking-[-.06em] sm:text-7xl">Two phones.<br/><span className="text-purple">One kampung.</span></h1><p className="mt-5 text-lg text-muted">{enabled?"Scan. Jump in. No signup, password or email verification.":"Scan to join KAKI. Sign in while guest access is switched off."}</p></div>
+    <div className="grid gap-6 md:grid-cols-2">{entries.map((entry,index)=><section key={entry.path} className={`overflow-hidden rounded-[36px] ${entry.colour} p-6 text-white sm:p-8`}><div className="flex items-center justify-between"><p className="text-xs font-black tracking-[.16em] text-sun">{entry.label}</p><entry.icon className="size-6"/></div><h2 className="mt-4 text-3xl font-black tracking-tight">{entry.title}</h2><p className="mt-2 text-sm text-white/70">{entry.subtitle}</p><div className="mx-auto mt-6 max-w-80 rounded-[28px] bg-white p-2"><Image src={codes[index]} alt={`Scan to ${entry.path === "ask"?"ask for help":"help a neighbour"}`} width={640} height={640} unoptimized className="h-auto w-full rounded-[22px]"/></div><p className="my-4 text-center text-xs text-white/70">kaki-dun.vercel.app/{entry.path}</p><ShareActions url={`https://kaki-dun.vercel.app/${entry.path}`}/></section>)}</div>
+    <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm font-bold text-muted"><span>Ask</span><ArrowRight className="size-4"/><span>Connect</span><ArrowRight className="size-4"/><span>Check in together</span><ArrowRight className="size-4"/><span className="text-purple">Watch it Bloom</span></div><p className="mt-4 text-center text-xs text-muted">Use two different phones or isolated browser profiles for two people. Keep each browser open.</p><nav className="my-7 flex justify-center gap-6 text-sm font-black text-purple"><Link href="/ai-use">How the AI works</Link><Link href="/demo">Fictional showcase</Link><Link href="/">Home</Link></nav>
+  </main>;
 }

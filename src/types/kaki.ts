@@ -22,6 +22,7 @@ export type Profile = {
   name: string;
   role: UserRole;
   onboardedAt?: string;
+  isGuest?: boolean;
   ageBand: string;
   languages: string[];
   avatarTone: "purple" | "coral" | "green" | "yellow";
@@ -47,6 +48,16 @@ export type Mission = {
   accessibilityNotes?: string;
   safetyLevel: "community" | "review";
   createdAt: string;
+  isDemo?: boolean;
+};
+
+export type MissionPresence = {
+  mission_id: string;
+  user_id: string;
+  on_way_at: string | null;
+  arrived_at: string | null;
+  consent_to_share: boolean;
+  reflection: string;
 };
 
 export type Bloom = {

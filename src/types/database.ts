@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      demo_settings: {
+        Row: { id: boolean; guest_enabled: boolean }
+        Insert: { id?: boolean; guest_enabled?: boolean }
+        Update: { guest_enabled?: boolean }
+        Relationships: []
+      }
+      mission_presence: {
+        Row: { mission_id: string; user_id: string; on_way_at: string | null; arrived_at: string | null; consent_to_share: boolean; reflection: string }
+        Insert: { mission_id: string; user_id: string; on_way_at?: string | null; arrived_at?: string | null; consent_to_share?: boolean; reflection?: string }
+        Update: { on_way_at?: string | null; arrived_at?: string | null; consent_to_share?: boolean; reflection?: string }
+        Relationships: []
+      }
       blooms: {
         Row: {
           category: Database["public"]["Enums"]["mission_category"]
@@ -378,6 +390,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      take_ai_quota: { Args: Record<PropertyKey, never>; Returns: boolean }
+      guest_access_allowed: { Args: Record<PropertyKey, never>; Returns: boolean }
       is_organiser: { Args: never; Returns: boolean }
     }
     Enums: {

@@ -6,7 +6,7 @@ import { createLocalDraft } from "@/lib/ai/local-draft";
 
 export async function generateMissionDraft(request: string, language: string) {
   if (!process.env.OPENAI_API_KEY) return { draft: createLocalDraft(request, language), mode: "local" as const };
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 40_000, maxRetries: 0 });
   const response = await client.responses.parse({
     model: process.env.OPENAI_MODEL || "gpt-5-mini",
     input: [
