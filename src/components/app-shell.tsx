@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Flower2, Home, Plus, Search, ShieldCheck, UserRound } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import type { Profile } from "@/types/kaki";
 
 const navItems = [
   { href: "/home", label: "Home", Icon: Home },
@@ -15,8 +17,21 @@ const navItems = [
   { href: "/profile", label: "Profile", Icon: UserRound },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, profile, unreadNotifications }: { children: ReactNode; profile: Profile; unreadNotifications: number }) {
   const pathname = usePathname();
+  const [unread, setUnread] = useState(unreadNotifications);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const refreshUnread = async () => {
+      const response = await fetch("/api/notifications", { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = await response.json() as { notifications?: { readAt?: string }[] };
+      setUnread(payload.notifications?.filter((item) => !item.readAt).length ?? 0);
+    };
+    const channel = supabase.channel(`kaki-notifications-${profile.id}`).on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => void refreshUnread()).subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [profile.id]);
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-ink/8 bg-cream/88 backdrop-blur-xl">
@@ -29,8 +44,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className="flex items-center gap-2">
-            <Link href="/organiser" className="hidden items-center gap-2 rounded-full border border-ink/10 bg-white px-4 py-2.5 text-sm font-bold text-ink transition hover:border-purple/30 lg:flex"><ShieldCheck className="size-4 text-purple" />Organiser</Link>
-            <button className="relative grid size-11 place-items-center rounded-full bg-white text-ink shadow-sm" aria-label="Notifications"><Bell className="size-5" /><span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-coral" /></button>
+            {profile.role === "organiser" ? <Link href="/organiser" className="hidden items-center gap-2 rounded-full border border-ink/10 bg-white px-4 py-2.5 text-sm font-bold text-ink transition hover:border-purple/30 lg:flex"><ShieldCheck className="size-4 text-purple" />Organiser</Link> : null}
+            <Link href="/notifications" className="relative grid size-11 place-items-center rounded-full bg-white text-ink shadow-sm" aria-label={`${unread} unread notifications`}><Bell className="size-5" />{unread ? <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-coral px-1.5 text-[10px] font-black leading-5 text-white">{Math.min(unread, 99)}</span> : null}</Link>
           </div>
         </div>
       </header>

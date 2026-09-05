@@ -329,6 +329,7 @@ export type Database = {
           full_name: string
           id: string
           neighbourhood: string
+          onboarded_at: string | null
           preferred_language: string
           role: Database["public"]["Enums"]["profile_role"]
           skills: string[]
@@ -345,6 +346,7 @@ export type Database = {
           full_name: string
           id: string
           neighbourhood?: string
+          onboarded_at?: string | null
           preferred_language?: string
           role?: Database["public"]["Enums"]["profile_role"]
           skills?: string[]
@@ -361,6 +363,7 @@ export type Database = {
           full_name?: string
           id?: string
           neighbourhood?: string
+          onboarded_at?: string | null
           preferred_language?: string
           role?: Database["public"]["Enums"]["profile_role"]
           skills?: string[]

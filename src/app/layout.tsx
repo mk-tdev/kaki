@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
-import { MissionProvider } from "@/components/mission-provider";
 import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
 
@@ -25,7 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geist.variable} antialiased`} data-scroll-behavior="smooth">
       <body>
-        <MissionProvider>{children}</MissionProvider>
+        {children}
         <PwaRegister />
       </body>
     </html>

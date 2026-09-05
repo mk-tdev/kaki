@@ -5,7 +5,12 @@ import { Avatar } from "@/components/avatar";
 import { Logo } from "@/components/brand/logo";
 import { HeroCommunityBloom } from "@/components/hero-community-bloom";
 import { ButtonLink } from "@/components/ui/button";
-import { profiles } from "@/data/demo";
+import type { Profile } from "@/types/kaki";
+
+const landingProfiles: [Profile, Profile] = [
+  { id: "illustrative-requester", name: "Auntie Mei", role: "resident", ageBand: "70–79", languages: ["中文", "English"], avatarTone: "coral", skills: ["Home cooking"], verified: true, bio: "Illustrative Pek Kio neighbour." },
+  { id: "illustrative-helper", name: "Arjun", role: "helper", ageBand: "18–24", languages: ["English"], avatarTone: "purple", skills: ["Phone basics"], verified: true, bio: "Illustrative digital Kaki." },
+];
 
 export default function LandingPage() {
   return (
@@ -29,6 +34,7 @@ export default function LandingPage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/ask" className="min-h-14 px-7 text-base"><Mic className="size-5" />I need a Kaki</ButtonLink>
               <ButtonLink href="/discover" variant="sun" className="min-h-14 px-7 text-base">I can be a Kaki <ArrowRight className="size-5" /></ButtonLink>
+              <ButtonLink href="/demo" variant="secondary" className="min-h-14 px-7 text-base">View demo</ButtonLink>
             </div>
             <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm font-bold text-muted"><span className="flex items-center gap-2"><Check className="size-4 text-kaki-green" />No complicated forms</span><span className="flex items-center gap-2"><Check className="size-4 text-kaki-green" />4 languages</span><span className="flex items-center gap-2"><Check className="size-4 text-kaki-green" />Safe public spaces</span></div>
           </div>
@@ -38,20 +44,20 @@ export default function LandingPage() {
             <div className="absolute bottom-[9%] right-[4%] size-52 rounded-full bg-mint blur-3xl" />
             <HeroCommunityBloom />
             <div className="hero-request-card grain paper-card absolute left-[2%] top-[12%] z-10 w-[82%] rotate-[-4deg] rounded-[36px] p-6 sm:left-[8%] sm:w-[76%]">
-              <div className="flex items-center gap-4"><Avatar profile={profiles[0]} size="lg" /><div><p className="text-xs font-black uppercase tracking-[.15em] text-coral">Auntie Mei asked</p><p className="mt-1 text-xl font-black">“How do I send a photo?”</p></div></div>
+              <div className="flex items-center gap-4"><Avatar profile={landingProfiles[0]} size="lg" /><div><p className="text-xs font-black uppercase tracking-[.15em] text-coral">Illustrative request</p><p className="mt-1 text-xl font-black">“How do I send a photo?”</p></div></div>
               <div className="mt-6 flex items-center justify-center gap-3 rounded-3xl bg-purple/8 px-4 py-5 text-purple"><Sparkles className="size-5" /><span className="font-black">KAKI is making this easy…</span></div>
             </div>
             <div className="hero-mission-card grain absolute right-[2%] top-[48%] z-20 w-[86%] rotate-[3deg] rounded-[36px] bg-ink p-6 text-white shadow-[0_28px_70px_rgba(33,29,53,.28)] sm:w-[78%]">
               <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.15em] text-sun">15-minute mission</p><h2 className="mt-2 text-2xl font-black tracking-[-.04em]">Send a photo to family</h2></div><span className="grid size-12 place-items-center rounded-2xl bg-white/10"><Languages className="size-6 text-mint" /></span></div>
               <div className="mt-5 space-y-3 text-sm text-white/75"><p className="flex items-center gap-2"><Clock3 className="size-4 text-sun" />Saturday, 3:00pm · 15 min</p><p className="flex items-center gap-2"><MapPin className="size-4 text-sun" />Pek Kio Community Innovation Space</p></div>
-              <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5"><Avatar profile={profiles[1]} /><div><p className="font-black">Arjun is your Kaki</p><p className="text-xs text-white/60">English · Digital buddy</p></div><span className="ml-auto rounded-full bg-mint px-3 py-1.5 text-xs font-black text-[#17654d]">Matched!</span></div>
+              <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5"><Avatar profile={landingProfiles[1]} /><div><p className="font-black">Arjun is your Kaki</p><p className="text-xs text-white/60">English · Digital buddy</p></div><span className="ml-auto rounded-full bg-mint px-3 py-1.5 text-xs font-black text-[#17654d]">Matched!</span></div>
             </div>
             <div className="hero-bloom-badge absolute bottom-[2%] left-[1%] z-30 flex items-center gap-3 rounded-full bg-coral px-5 py-3 text-sm font-black text-white shadow-xl"><Flower2 className="hero-bloom-flower size-5" />A new neighbour moment bloomed</div>
           </div>
         </section>
 
         <section id="impact" className="bg-ink px-5 py-8 text-white sm:px-8">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 py-7 md:grid-cols-4"><Impact value="128" label="neighbour moments" /><Impact value="3,840" label="minutes shared" /><Impact value="47" label="skills exchanged" /><Impact value="22" label="items saved" /></div>
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 py-7 md:grid-cols-4"><Impact value="Real" label="account-backed profiles" /><Impact value="Live" label="community mission updates" /><Impact value="Safe" label="row-level permissions" /><Impact value="Clear" label="demo and live data separation" /></div>
         </section>
 
         <section className="mx-auto max-w-7xl px-5 pt-24 sm:px-8">
@@ -74,7 +80,7 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="border-t border-ink/10 px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row"><Logo /><p className="text-center text-sm text-muted">Built for the Pek Kio Community Innovation Space · Singapore</p><Link href="/home" className="text-sm font-black text-purple">Enter KAKI →</Link></div></footer>
+      <footer className="border-t border-ink/10 px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row"><Logo /><p className="text-center text-sm text-muted">Built for the Pek Kio Community Innovation Space · Singapore</p><div className="flex gap-5"><Link href="/demo" className="text-sm font-black text-muted">View demo</Link><Link href="/home" className="text-sm font-black text-purple">Enter KAKI →</Link></div></div></footer>
     </div>
   );
 }

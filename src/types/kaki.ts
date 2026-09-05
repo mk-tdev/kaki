@@ -21,6 +21,7 @@ export type Profile = {
   id: string;
   name: string;
   role: UserRole;
+  onboardedAt?: string;
   ageBand: string;
   languages: string[];
   avatarTone: "purple" | "coral" | "green" | "yellow";
@@ -55,6 +56,24 @@ export type Bloom = {
   title: string;
   story: string;
   participantNames: string[];
+  createdAt: string;
+};
+
+export type CommunityMessage = {
+  id: string;
+  missionId: string;
+  body: string;
+  isSystem: boolean;
+  sender: Profile;
+  createdAt: string;
+};
+
+export type CommunityNotification = {
+  id: string;
+  missionId?: string;
+  title: string;
+  body: string;
+  readAt?: string;
   createdAt: string;
 };
 

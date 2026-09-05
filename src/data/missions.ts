@@ -42,15 +42,18 @@ export async function createMission(input: Omit<MissionDraft, "safetyNote"> & { 
 export async function updateMission(id: string, action: "claim" | "start" | "complete", story?: string, consentToShare = false) {
   const { supabase, userId } = await authenticatedClient();
   if (action === "claim") {
-    const { error } = await supabase.from("missions").update({ helper_id: userId, status: "matched" }).eq("id", id).eq("status", "open");
+    const { data, error } = await supabase.from("missions").update({ helper_id: userId, status: "matched" }).eq("id", id).eq("status", "open").neq("requester_id", userId).select("id").maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("This mission is no longer available to claim.");
   } else if (action === "start") {
-    const { error } = await supabase.from("missions").update({ status: "in_progress" }).eq("id", id).eq("helper_id", userId);
+    const { data, error } = await supabase.from("missions").update({ status: "in_progress" }).eq("id", id).eq("helper_id", userId).eq("status", "matched").select("id").maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("Only the assigned Kaki can start a matched mission.");
   } else {
     const completedAt = new Date().toISOString();
-    const { data: mission, error } = await supabase.from("missions").update({ status: "completed", completed_at: completedAt }).eq("id", id).select("id,title,category,requester_id,helper_id").single();
+    const { data: mission, error } = await supabase.from("missions").update({ status: "completed", completed_at: completedAt }).eq("id", id).eq("helper_id", userId).eq("status", "in_progress").select("id,title,category,requester_id,helper_id").maybeSingle();
     if (error) throw error;
+    if (!mission) throw new Error("Only the assigned Kaki can complete a mission in progress.");
     const participantIds = mission.helper_id ? [mission.requester_id, mission.helper_id] : [mission.requester_id];
     const { data: participants } = await supabase.from("profiles").select("full_name").in("id", participantIds);
     const names = participants?.map((profile) => profile.full_name.split(" ").at(-1) ?? profile.full_name) ?? [];

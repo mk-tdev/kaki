@@ -3,12 +3,13 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/types/kaki";
 
-const profileSelect = "id,full_name,role,age_band,spoken_languages,skills,bio,verified_at";
+const profileSelect = "id,full_name,role,onboarded_at,age_band,spoken_languages,skills,bio,verified_at";
 
 type ProfileRow = {
   id: string;
   full_name: string;
   role: UserRole;
+  onboarded_at: string | null;
   age_band: string | null;
   spoken_languages: string[];
   skills: string[];
@@ -21,6 +22,7 @@ function mapProfile(row: ProfileRow): Profile {
     id: row.id,
     name: row.full_name,
     role: row.role,
+    onboardedAt: row.onboarded_at ?? undefined,
     ageBand: row.age_band ?? "Prefer not to say",
     languages: row.spoken_languages,
     avatarTone: "purple",
@@ -58,6 +60,7 @@ export async function updateCurrentProfile(input: {
       role: input.role,
       preferred_language: input.preferredLanguage,
       spoken_languages: [input.preferredLanguage],
+      onboarded_at: new Date().toISOString(),
     })
     .eq("id", userId)
     .select(profileSelect)

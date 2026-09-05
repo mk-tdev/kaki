@@ -15,9 +15,9 @@ const statusLabels: Record<Mission["status"], string> = {
   flagged: "Organiser review",
 };
 
-export function MissionCard({ mission, compact = false }: { mission: Mission; compact?: boolean }) {
+export function MissionCard({ mission, compact = false, href }: { mission: Mission; compact?: boolean; href?: string }) {
   return (
-    <Link href={`/missions/${mission.id}`} className="paper-card group block rounded-[28px] p-5 transition duration-200 hover:-translate-y-1 hover:border-purple/25 hover:shadow-[0_22px_60px_rgba(48,39,83,.13)]">
+    <Link href={href ?? `/missions/${mission.id}`} className="paper-card group block rounded-[28px] p-5 transition duration-200 hover:-translate-y-1 hover:border-purple/25 hover:shadow-[0_22px_60px_rgba(48,39,83,.13)]">
       <div className="flex items-start gap-3">
         <CategoryIcon category={mission.category} />
         <div className="min-w-0 flex-1">
@@ -36,7 +36,7 @@ export function MissionCard({ mission, compact = false }: { mission: Mission; co
       </div>
       <div className="mt-5 flex items-center gap-3 border-t border-ink/8 pt-4">
         <Avatar profile={mission.requester} size="sm" />
-        <div className="min-w-0"><p className="truncate text-sm font-bold text-ink">{mission.requester.name}</p><p className="text-xs text-muted">Neighbour since 1992</p></div>
+        <div className="min-w-0"><p className="truncate text-sm font-bold text-ink">{mission.requester.name}</p><p className="text-xs capitalize text-muted">{mission.requester.role} · Pek Kio</p></div>
         <span className="ml-auto text-sm font-black text-purple">View mission →</span>
       </div>
     </Link>
