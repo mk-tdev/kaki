@@ -31,11 +31,11 @@ KAKI is a mobile-first neighbour action network for Pek Kio, Singapore. It turns
 - Motion for the community mural
 - Vitest for AI rule and schema tests
 
-## Azure backend pilot
+## Azure deployment
 
-This feature branch uses a Vercel Next.js frontend, an HTTPS NestJS API on Azure App Service, and Azure PostgreSQL reached through a private endpoint. The API owns database access, sessions, business rules and OpenAI calls.
+Production uses a Vercel Next.js frontend, an HTTPS NestJS API on Azure App Service, and Azure PostgreSQL reached through a private endpoint. The API owns database access, sessions, business rules and OpenAI calls.
 
-See [Azure setup, deployment and teardown](docs/AZURE.md) for the resource group, private environment file, private networking, account invitations and migration limitations.
+See the [complete Azure deployment guide](docs/AZURE.md) for the architecture, provisioning order, OpenAI secret flow, Vercel configuration, private networking, verification and teardown.
 
 ```sh
 npm ci

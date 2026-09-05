@@ -22,7 +22,7 @@ afterEach(async () => {
 it("navigates the pitch and exposes speaker notes without a timer", async () => {
   await act(() => root.render(createElement(PresentationDeck, { qrCode: "data:image/png;base64,aGVsbG8=" })));
   expect(container.textContent).toContain("AI can answer");
-  expect(container.querySelectorAll('[aria-label^="Go to scene"]')).toHaveLength(7);
+  expect(container.querySelectorAll('[aria-label^="Go to scene"]')).toHaveLength(8);
   expect(container.textContent).not.toContain("5 minute pitch");
   expect(container.querySelector('[aria-label="Start pitch timer"]')).toBeNull();
 
@@ -35,4 +35,9 @@ it("navigates the pitch and exposes speaker notes without a timer", async () => 
 
   await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })));
   expect(container.querySelector('[aria-label="Speaker notes"]')).toBeNull();
+
+  await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "End" })));
+  expect(container.textContent).toContain("Simple outside.");
+  expect(container.textContent).toContain("PostgreSQL has no public endpoint");
+  expect((container.querySelector('[aria-label="Next scene"]') as HTMLButtonElement).disabled).toBe(true);
 });

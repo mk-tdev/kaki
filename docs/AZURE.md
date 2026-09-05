@@ -1,6 +1,6 @@
-# Azure PostgreSQL pilot
+# KAKI Azure deployment guide
 
-Branch: `feature/azure-postgres-backend`. Vercel hosts the Next.js frontend and forwards authenticated HTTPS requests to a standalone NestJS API on Azure App Service; the API reaches PostgreSQL through a private endpoint; Supabase is no longer used by this branch. Existing Supabase data and production deployments are not modified.
+Production: **https://kaki-dun.vercel.app**. Vercel hosts the Next.js frontend and forwards authenticated HTTPS requests to a standalone NestJS API on Azure App Service. The API reaches PostgreSQL through a private endpoint and makes all OpenAI calls. Supabase is no longer part of the running application.
 
 ## Disposable Azure boundary
 
@@ -31,6 +31,72 @@ The Next.js server handles the HttpOnly session cookie and forwards requests to 
 
 API origin: **https://kaki-api-64cc2118.azurewebsites.net**. `/health` is public process readiness; `/api/health` requires the private bridge key and checks database connectivity. PostgreSQL public access is disabled. The deployed API resolves the database to `10.42.1.4` inside the VNet. Vercel needs no database firewall rule or static outbound IP.
 
+### Request and secret flow
+
+1. The browser calls `/api/*` on the same Vercel origin. It never calls Azure or PostgreSQL directly.
+2. Next.js reads the opaque HttpOnly session cookie and forwards the request to Azure over HTTPS.
+3. Next.js adds `API_BRIDGE_KEY` to prove the request came from the trusted frontend. The key never enters browser JavaScript.
+4. NestJS validates the bridge key, resolves the user session, applies business and safety rules, and opens a restricted PostgreSQL transaction.
+5. PostgreSQL is resolved through private DNS to the private endpoint. Its public network access is disabled.
+6. NestJS calls OpenAI when a feature needs generation, suggestions, transcription, translation or matching. Only the Azure API reads `OPENAI_API_KEY`; it is never sent to the browser.
+
+| Secret or setting | Required in Vercel | Required in Azure App Service | Operator copy |
+| --- | --- | --- | --- |
+| `APP_ORIGIN` | Yes | No | No |
+| `API_BASE_URL` | Yes | No | No |
+| `API_BRIDGE_KEY` | Yes | Yes | Local copy |
+| `DATABASE_URL` (`kaki_app`) | No | Yes | Local copy |
+| `DATABASE_ADMIN_URL` | No | **Never** | Yes |
+| `AUTH_INVITE_CODE` | No | Yes | Local copy |
+| `OPENAI_API_KEY` and model settings | No | Yes | Local source copy |
+
+## End-to-end setup
+
+Prerequisites are Node.js 24, npm, Python 3, Azure CLI and Vercel CLI. Authenticate both providers first:
+
+```sh
+az login
+vercel login
+```
+
+For a brand-new disposable deployment, start from a machine whose current public IP may temporarily reach PostgreSQL for migrations:
+
+```sh
+npm ci
+npm ci --prefix services/api
+python3 scripts/azure/provision.py
+npm run db:migrate
+python3 scripts/azure/provision-api.py
+```
+
+Both provisioning scripts use `rg-kaki-azure-pilot`. The first creates PostgreSQL and the restricted runtime/admin credentials. The second creates the VNet, subnets, private DNS, private endpoint, App Service plan and NestJS app. They store generated identifiers and credentials in `.env.azure.local`, which is gitignored and mode 0600.
+
+Add the OpenAI configuration to the gitignored `.env.local`, then deploy the API:
+
+```dotenv
+OPENAI_API_KEY=your-private-key
+OPENAI_MODEL=gpt-5-mini
+# Optional overrides; omit them to use the defaults shown below.
+OPENAI_SUGGESTIONS_MODEL=gpt-4.1-nano
+OPENAI_TRANSCRIPTION_MODEL=gpt-transcribe
+OPENAI_TRANSLATION_MODEL=gpt-4.1-mini
+```
+
+```sh
+npm run api:deploy
+```
+
+After the API health check proves that PostgreSQL resolves privately, close the temporary public database path:
+
+```sh
+az postgres flexible-server update \
+  --resource-group rg-kaki-azure-pilot \
+  --name kaki-pg-64cc2118 \
+  --public-access Disabled
+```
+
+Finally, link the frontend, add the three Vercel settings documented below, and deploy production. Do not put database or OpenAI credentials in the frontend deployment.
+
 ## Credentials and local development
 
 `.env.azure.local` is a gitignored operator file (mode 0600) with Azure identifiers, runtime/admin database credentials, invitation and bridge key. `.env.frontend.local` contains only the frontend's API settings. Never commit either file.
@@ -53,6 +119,25 @@ npm run api:deploy
 The deployment builds NestJS, packages production dependencies and deploys to the existing App Service. It securely applies runtime settings from `.env.azure.local` and existing `.env.local` AI settings. Administrator credentials are never deployed. Verify `/health` and the authenticated database health endpoint after deployment.
 
 `npm run db:migrate` and the account operator commands require database network access: run them from a controlled VNet-connected operator environment with the private operator credentials. They no longer work directly from an ordinary laptop. Do not reopen public database access for routine application use. Migrations are checksum-tracked, locked and transactional; changing an applied migration is rejected. `supabase/migrations` is historical reference only.
+
+## OpenAI configuration
+
+OpenAI is configured on the NestJS App Service, not in Next.js. During `npm run api:deploy`, `scripts/azure/deploy-api.mjs` loads `.env.azure.local` first and `.env.local` second. Existing shell variables take precedence. It creates a private temporary JSON settings file, applies the selected values with Azure CLI, redacts known secrets from errors, deploys the compiled API, removes the temporary bundle, and waits for the database health check.
+
+Before this migration, the Vercel project already contained `OPENAI_API_KEY` and `OPENAI_MODEL`. Those legacy copies remain present but the current Next.js frontend never reads them. The active key used by KAKI was copied independently into Azure by the deployment script. Remove the Vercel copies after any older deployment that used the former all-in-one Next.js backend is no longer needed.
+
+The currently deployed App Service has `OPENAI_API_KEY` and `OPENAI_MODEL`. The other model variables are optional and currently use these code defaults:
+
+| Feature | Setting | Default |
+| --- | --- | --- |
+| Mission structure, safety triage and match introduction | `OPENAI_MODEL` | `gpt-5-mini` |
+| Live request suggestions | `OPENAI_SUGGESTIONS_MODEL` | `gpt-4.1-nano` |
+| Voice transcription | `OPENAI_TRANSCRIPTION_MODEL` | `gpt-transcribe` |
+| Translation | `OPENAI_TRANSLATION_MODEL` | `gpt-4.1-mini` |
+
+If `OPENAI_API_KEY` is absent, mission drafting falls back to local rules. Suggestions, transcription, translation and AI match introductions report that the feature is unavailable. Quotas are enforced in PostgreSQL before paid AI calls.
+
+To rotate the key, replace `OPENAI_API_KEY` in the private local source file or export it in the current shell, run `npm run api:deploy`, verify an AI request, and then revoke the old key in the OpenAI dashboard. Never paste the key into documentation, commit it, put it in a `NEXT_PUBLIC_*` variable, or pass it to Vercel. Azure app-setting commands can reveal values if queried without a name-only filter, so avoid copying raw CLI output into tickets or logs.
 
 ## Authentication differences
 
@@ -83,21 +168,21 @@ The `auth` schema is now application-owned PostgreSQL code; its familiar `auth.u
 
 TLS certificate validation is enabled. Use the generated URL without `sslmode` overrides. Each NestJS process has at most three database connections by default. Account for aggregate concurrency before increasing traffic; B1ms has limited memory/connections. Migrations always use the separate administrator connection.
 
-## Vercel preview configuration
+## Vercel frontend configuration
 
-Set these server-only variables for **Preview**, scoped to `feature/azure-postgres-backend`, then redeploy that branch:
+The repository is linked to `muthukumars-projects-69200587/kaki`. Set these server-only variables for Production; use the matching stable alias for Preview if testing a branch:
 
 | Variable | Value |
 | --- | --- |
 | `API_BASE_URL` | `https://kaki-api-64cc2118.azurewebsites.net` (no `/api` suffix) |
 | `API_BRIDGE_KEY` | Copy from private `.env.frontend.local` |
-| `APP_ORIGIN` | Exact HTTPS origin of the chosen preview/branch URL |
+| `APP_ORIGIN` | `https://kaki-dun.vercel.app` in Production |
 
-Do not prefix these with `NEXT_PUBLIC_`. The bridge key authenticates the Next.js server to NestJS; opaque user sessions provide user identity separately. The frontend no longer needs `DATABASE_URL`, `DATABASE_ADMIN_URL`, `AUTH_INVITE_CODE` or `OPENAI_*`; those runtime secrets belong on Azure (except the admin URL, which belongs only with operators). Supabase settings are unused on this branch. Preserve settings needed by the existing production branch until cutover.
+Do not prefix these with `NEXT_PUBLIC_`. The bridge key authenticates the Next.js server to NestJS; opaque user sessions provide user identity separately. The frontend does not need `DATABASE_URL`, `DATABASE_ADMIN_URL`, `AUTH_INVITE_CODE` or `OPENAI_*`; those runtime secrets belong on Azure (except the admin URL, which belongs only with operators). Legacy Supabase and OpenAI settings in Vercel are unused and may be removed after confirming no older deployment depends on them.
 
 The project root remains the repository root and uses the normal Next.js build. Deploy NestJS separately with `npm run api:deploy`. New builds require `npm ci --prefix services/api` only for backend builds and the combined repository tests, not for the Vercel frontend build.
 
-Vercel CLI was not authenticated during setup, so these Vercel environment changes still require an authenticated dashboard/CLI session. Production has not been switched. Verify a branch preview before production cutover. Keep a stable preview alias for `APP_ORIGIN` so mutating requests pass the exact-origin check.
+Environment changes affect new deployments, so redeploy after updating a value. `APP_ORIGIN` must include `https://` and must exactly match the browser origin. A mismatch deliberately returns 403 for mutating API requests. The production deployment was verified with guest creation, session-cookie issuance, authenticated profile access and logout through the Vercel-to-Azure path.
 
 ## Existing Supabase data
 

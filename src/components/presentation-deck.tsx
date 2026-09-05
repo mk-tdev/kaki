@@ -7,14 +7,20 @@ import {
   ArrowRight,
   Bot,
   Check,
+  Database,
   Expand,
+  Globe2,
   HandHeart,
   HeartHandshake,
+  KeyRound,
   Languages,
   MapPin,
   MessageCircle,
   Mic,
   QrCode,
+  Server,
+  ShieldCheck,
+  Sparkles,
   StickyNote,
   Users,
   X,
@@ -29,6 +35,8 @@ type Scene = {
   note: string;
   content: ReactNode;
 };
+
+const SCENE_COUNT = 8;
 
 function IntroScene({ onBegin }: { onBegin: () => void }) {
   return <div className="grid min-h-0 flex-1 items-center gap-6 lg:grid-cols-[.88fr_1.12fr]">
@@ -139,12 +147,75 @@ function ClosingScene({ qrCode }: { qrCode: string }) {
   </div>;
 }
 
+function ArchitectureScene() {
+  const layers = [
+    {
+      eyebrow: "PUBLIC EXPERIENCE",
+      title: "Vercel Next.js",
+      detail: "Pages, same-origin API bridge and HttpOnly session cookie",
+      icon: Globe2,
+      tone: "bg-sun",
+    },
+    {
+      eyebrow: "SERVER-ONLY HTTPS",
+      title: "Azure NestJS API",
+      detail: "Authentication, safety rules, quotas, missions and AI calls",
+      icon: Server,
+      tone: "bg-coral text-white",
+    },
+    {
+      eyebrow: "PRIVATE NETWORK",
+      title: "Azure PostgreSQL",
+      detail: "Accounts and community data protected by roles and RLS",
+      icon: Database,
+      tone: "bg-purple text-white",
+    },
+  ];
+
+  return <div className="flex min-h-0 flex-1 flex-col justify-center">
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="text-xs font-black tracking-[.18em] text-coral">APP ARCHITECTURE</p>
+        <h1 className="slide-heading mt-3">Simple outside.<br /><span className="text-purple">Private where it matters.</span></h1>
+      </div>
+      <div className="flex items-center gap-2 rounded-xl border border-ink/15 bg-paper px-4 py-3 text-sm font-black text-muted">
+        <ShieldCheck className="size-5 text-kaki-green" /> PostgreSQL has no public endpoint
+      </div>
+    </div>
+
+    <div className="mt-7 grid items-stretch gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
+      {layers.map(({ eyebrow, title, detail, icon: Icon, tone }, index) => <div key={title} className="contents">
+        <article className="flex min-h-40 flex-col border-t-4 border-ink bg-paper p-5 shadow-[0_8px_0_rgba(33,29,53,.07)]">
+          <div className="flex items-start justify-between gap-3">
+            <span className={cn("grid size-12 place-items-center rounded-lg", tone)}><Icon className="size-6" /></span>
+            <span className="text-right text-[10px] font-black tracking-[.14em] text-muted">{eyebrow}</span>
+          </div>
+          <h2 className="mt-5 text-2xl font-black tracking-tight">{title}</h2>
+          <p className="mt-2 max-w-sm text-sm font-bold leading-relaxed text-muted">{detail}</p>
+        </article>
+        {index < layers.length - 1 ? <div className="grid place-items-center py-1 text-purple" aria-hidden="true"><ArrowRight className="size-7 rotate-90 lg:rotate-0" /></div> : null}
+      </div>)}
+    </div>
+
+    <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_1.15fr]">
+      <div className="flex items-center gap-4 border border-ink/15 bg-mint px-5 py-4">
+        <Sparkles className="size-7 shrink-0 text-purple" />
+        <div><p className="text-xs font-black tracking-[.14em] text-purple">OPENAI</p><p className="mt-1 font-bold">Called only by NestJS; the browser never sees the API key.</p></div>
+      </div>
+      <div className="flex items-center gap-4 border border-ink/15 bg-paper px-5 py-4">
+        <KeyRound className="size-7 shrink-0 text-coral" />
+        <p className="font-bold"><span className="text-purple">Bridge key</span> authenticates Vercel to Azure. <span className="text-purple">Opaque sessions</span> identify each neighbour.</p>
+      </div>
+    </div>
+  </div>;
+}
+
 export function PresentationDeck({ qrCode }: { qrCode: string }) {
   const [current, setCurrent] = useState(0);
   const [notesOpen, setNotesOpen] = useState(false);
   const touchStart = useRef<number | null>(null);
   const go = useCallback((next: number) => {
-    setCurrent(Math.max(0, Math.min(6, next)));
+    setCurrent(Math.max(0, Math.min(SCENE_COUNT - 1, next)));
     setNotesOpen(false);
   }, []);
   const scenes: Scene[] = [
@@ -155,6 +226,7 @@ export function PresentationDeck({ qrCode }: { qrCode: string }) {
     { shortTitle: "The AI", duration: 45, note: "AI handles language, structure, matching and simple guidance. It never decides trust for people. Both neighbours keep control, can abandon gracefully and never need to share a password or home address.", content: <AiScene /> },
     { shortTitle: "The exchange", duration: 45, note: "Intergeneration is not one-way volunteering. A younger neighbour may offer digital confidence. An older neighbour may pass on repair, cooking or local knowledge. Both leave with more than they arrived with.", content: <ValueScene /> },
     { shortTitle: "The challenge", duration: 35, note: "Close on the distinction: we are not building AI to replace community support. We are using AI to activate the support already living in the neighbourhood. Invite the judges to scan and try it.", content: <ClosingScene qrCode={qrCode} /> },
+    { shortTitle: "The architecture", duration: 30, note: "The public experience stays on Vercel. Every browser API call remains same-origin, then the Next.js server forwards it over HTTPS with a private bridge credential. NestJS owns authentication, business rules and OpenAI calls. PostgreSQL is reachable only inside the Azure virtual network through its private endpoint.", content: <ArchitectureScene /> },
   ];
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -190,7 +262,7 @@ export function PresentationDeck({ qrCode }: { qrCode: string }) {
       </section>
 
       <nav className="sticky top-3 flex h-[calc(100dvh-5.5rem)] w-12 shrink-0 self-start flex-col items-center border-l border-ink/15 pl-2 sm:w-20 sm:pl-4 lg:static lg:h-auto lg:self-stretch" aria-label="Presentation controls">
-        <div className="mb-3 text-center leading-none"><span className="block text-base font-black text-purple sm:text-lg">{String(current + 1).padStart(2, "0")}</span><span className="mt-1 block text-[10px] font-bold text-muted sm:text-xs">/ 07</span></div>
+        <div className="mb-3 text-center leading-none"><span className="block text-base font-black text-purple sm:text-lg">{String(current + 1).padStart(2, "0")}</span><span className="mt-1 block text-[10px] font-bold text-muted sm:text-xs">/ {String(SCENE_COUNT).padStart(2, "0")}</span></div>
         <ol className="flex min-h-40 flex-1 flex-col gap-1.5" aria-label="Presentation progress">{scenes.map((scene, index) => <li key={scene.shortTitle} className="min-h-4 flex-1"><button onClick={() => go(index)} aria-label={`Go to scene ${index + 1}: ${scene.shortTitle}`} aria-current={index === current ? "step" : undefined} className={cn("h-full w-2 rounded-sm transition-colors sm:w-2.5", index <= current ? "bg-purple" : "bg-ink/10")} /></li>)}</ol>
         <div className="mt-3 flex flex-col gap-2">
           <button onClick={() => go(current - 1)} disabled={current === 0} className="grid size-10 place-items-center rounded-lg border border-ink/15 bg-paper disabled:opacity-30 sm:size-11" aria-label="Previous scene"><ArrowLeft className="size-5" /></button>
