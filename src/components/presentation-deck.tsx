@@ -59,7 +59,7 @@ function WitnessScene() {
       <p className="mt-8 max-w-3xl text-[clamp(1.1rem,1.8vw,1.5rem)] leading-relaxed text-muted">The barrier wasn’t intelligence. It was <strong className="text-purple">confidence</strong>, <strong className="text-coral">language</strong>—and <strong className="text-ink">having someone beside her.</strong></p>
     </div>
     <div className="relative h-[38vh] min-h-72 overflow-hidden border-b-4 border-coral lg:h-[61vh] lg:min-h-[480px]">
-      <Image src="/assets/kaki-presentation-neighbour.png" alt="" fill sizes="(max-width: 1024px) 100vw, 48vw" className="object-cover object-[72%_center]" />
+      <Image src="/assets/kaki-presentation-organiser.png" alt="The organiser standing beside an older neighbour as she learns on her phone" fill sizes="(max-width: 1024px) 100vw, 48vw" className="object-cover object-center" />
     </div>
   </div>;
 }
