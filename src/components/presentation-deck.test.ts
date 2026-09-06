@@ -21,13 +21,17 @@ afterEach(async () => {
 
 it("navigates the pitch and exposes speaker notes without a timer", async () => {
   await act(() => root.render(createElement(PresentationDeck, { qrCode: "data:image/png;base64,aGVsbG8=" })));
-  expect(container.textContent).toContain("AI can answer");
-  expect(container.querySelectorAll('[aria-label^="Go to scene"]')).toHaveLength(8);
+  expect(container.textContent).toContain("Different ages.Shared strengths.One neighbourhood.");
+  expect(container.textContent).toContain("Use AI to help neighbours of all ages connect");
+  expect(container.querySelectorAll('[aria-label^="Go to scene"]')).toHaveLength(9);
   expect(container.textContent).not.toContain("5 minute pitch");
   expect(container.querySelector('[aria-label="Start pitch timer"]')).toBeNull();
 
   await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" })));
-  expect(container.textContent).toContain("Today, I saw the idea.");
+  expect(container.textContent).toContain("AI can answer");
+
+  await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" })));
+  expect(container.textContent).toContain("Yesterday, I saw the idea.");
 
   await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "n" })));
   expect(container.querySelector('[aria-label="Speaker notes"]')).not.toBeNull();

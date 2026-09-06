@@ -36,7 +36,21 @@ type Scene = {
   content: ReactNode;
 };
 
-const SCENE_COUNT = 8;
+const SCENE_COUNT = 9;
+
+function IntergenerationScene({ onBegin }: { onBegin: () => void }) {
+  return <div className="grid min-h-0 flex-1 items-center gap-6 lg:grid-cols-[.82fr_1.18fr]">
+    <div className="relative z-10 py-4 lg:py-8">
+      <p className="inline-flex rounded-full bg-coral px-4 py-2 text-xs font-black tracking-[.16em] text-white">INTER-GENERATION</p>
+      <h1 className="mt-6 max-w-3xl text-[clamp(2.5rem,5vw,5.4rem)] font-black leading-[.92] tracking-[-.055em] text-ink">Different ages.<br /><span className="text-purple">Shared strengths.</span><br />One neighbourhood.</h1>
+      <p className="mt-6 max-w-2xl text-[clamp(1.05rem,1.75vw,1.45rem)] font-bold leading-relaxed text-muted">Use AI to help neighbours of all ages connect, share skills &amp; support one another.</p>
+      <button onClick={onBegin} className="mt-6 inline-flex min-h-14 items-center gap-4 rounded-xl bg-purple px-6 text-base font-black text-white shadow-[0_6px_0_#382681] transition-transform motion-safe:hover:translate-y-0.5">See the idea in action <ArrowRight className="size-5" /></button>
+    </div>
+    <div className="relative h-[38vh] min-h-72 overflow-hidden border-b-4 border-sun lg:h-[68vh] lg:min-h-[520px]">
+      <Image src="/assets/kaki-intergeneration.png" alt="Neighbours of different generations exchanging digital, gardening and repair skills" fill priority sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover object-[76%_center] lg:object-[72%_center]" />
+    </div>
+  </div>;
+}
 
 function IntroScene({ onBegin }: { onBegin: () => void }) {
   return <div className="grid min-h-0 flex-1 items-center gap-6 lg:grid-cols-[.88fr_1.12fr]">
@@ -54,7 +68,7 @@ function IntroScene({ onBegin }: { onBegin: () => void }) {
 function WitnessScene() {
   return <div className="grid min-h-0 flex-1 items-center gap-8 lg:grid-cols-[1fr_.92fr]">
     <div>
-      <h1 className="slide-heading">Today, I saw <span className="text-purple">the idea.</span></h1>
+      <h1 className="slide-heading">Yesterday, I saw <span className="text-purple">the idea.</span></h1>
       <blockquote className="mt-7 max-w-3xl border-l-4 border-purple pl-5 text-[clamp(1.25rem,2.4vw,2.2rem)] font-bold leading-snug text-ink">“An organiser sat beside an older neighbour and showed her what ChatGPT could do.”</blockquote>
       <p className="mt-8 max-w-3xl text-[clamp(1.1rem,1.8vw,1.5rem)] leading-relaxed text-muted">The barrier wasn’t intelligence. It was <strong className="text-purple">confidence</strong>, <strong className="text-coral">language</strong>—and <strong className="text-ink">having someone beside her.</strong></p>
     </div>
@@ -219,7 +233,8 @@ export function PresentationDeck({ qrCode }: { qrCode: string }) {
     setNotesOpen(false);
   }, []);
   const scenes: Scene[] = [
-    { shortTitle: "The belief", duration: 30, note: "Open with the contrast. AI is powerful, but the moment that changes someone’s confidence is often another person sitting beside them. KAKI is built around that human truth.", content: <IntroScene onBegin={() => go(1)} /> },
+    { shortTitle: "Inter-generation", duration: 30, note: "Start with the purpose. KAKI uses AI to help neighbours of every age discover one another, exchange useful skills and offer support. The value moves in both directions.", content: <IntergenerationScene onBegin={() => go(1)} /> },
+    { shortTitle: "The belief", duration: 30, note: "Open with the contrast. AI is powerful, but the moment that changes someone’s confidence is often another person sitting beside them. KAKI is built around that human truth.", content: <IntroScene onBegin={() => go(2)} /> },
     { shortTitle: "The moment", duration: 45, note: "Today I watched an organiser help an older neighbour understand ChatGPT and how she could use it. She did not lack ability. She needed a trusted person, familiar language and permission to try.", content: <WitnessScene /> },
     { shortTitle: "The opportunity", duration: 35, note: "That moment should not depend on chance. Across Pek Kio, small requests and useful skills exist side by side. KAKI makes those needs visible and approachable.", content: <OpportunityScene /> },
     { shortTitle: "The product", duration: 50, note: "A resident speaks naturally. AI converts the request into a clear, bounded and safer mission. A neighbour chooses to help. They chat, agree a public meeting point, check in and complete the moment together.", content: <ProductScene /> },
