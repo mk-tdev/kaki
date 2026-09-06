@@ -23,9 +23,13 @@ it("navigates the pitch and exposes speaker notes without a timer", async () => 
   await act(() => root.render(createElement(PresentationDeck, { qrCode: "data:image/png;base64,aGVsbG8=" })));
   expect(container.textContent).toContain("Different ages.Shared strengths.One neighbourhood.");
   expect(container.textContent).toContain("Use AI to help neighbours of all ages connect");
-  expect(container.querySelectorAll('[aria-label^="Go to scene"]')).toHaveLength(9);
+  expect(container.querySelectorAll('[aria-label^="Go to scene"]')).toHaveLength(10);
   expect(container.textContent).not.toContain("5 minute pitch");
   expect(container.querySelector('[aria-label="Start pitch timer"]')).toBeNull();
+
+  await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" })));
+  expect(container.textContent).toContain("I don’t want to build another product people have to learn.");
+  expect(container.textContent).toContain("AI stays in the background. The neighbour comes forward.");
 
   await act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" })));
   expect(container.textContent).toContain("AI can answer");

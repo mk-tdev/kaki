@@ -36,7 +36,7 @@ type Scene = {
   content: ReactNode;
 };
 
-const SCENE_COUNT = 9;
+const SCENE_COUNT = 10;
 
 function IntergenerationScene({ onBegin }: { onBegin: () => void }) {
   return <div className="grid min-h-0 flex-1 items-center gap-6 lg:grid-cols-[.82fr_1.18fr]">
@@ -49,6 +49,27 @@ function IntergenerationScene({ onBegin }: { onBegin: () => void }) {
     <div className="relative h-[38vh] min-h-72 overflow-hidden border-b-4 border-sun lg:h-[68vh] lg:min-h-[520px]">
       <Image src="/assets/kaki-intergeneration.png" alt="Neighbours of different generations exchanging digital, gardening and repair skills" fill priority sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover object-[76%_center] lg:object-[72%_center]" />
     </div>
+  </div>;
+}
+
+function PeopleFirstScene() {
+  return <div className="flex min-h-0 flex-1 flex-col justify-center">
+    <p className="text-xs font-black tracking-[.18em] text-coral">WHY KAKI IS DIFFERENT</p>
+    <h1 className="mt-4 max-w-6xl text-[clamp(2.5rem,5.4vw,5.8rem)] font-black leading-[.9] tracking-[-.06em] text-ink">I don’t want to build another product <span className="text-purple">people have to learn.</span></h1>
+    <p className="mt-6 max-w-4xl text-[clamp(1.05rem,1.8vw,1.5rem)] font-bold leading-relaxed text-muted">More unfamiliar technology can widen the gap we are trying to close.</p>
+
+    <div className="mt-8 grid gap-4 md:grid-cols-2">
+      <article className="border-t-4 border-coral bg-paper p-6 shadow-[0_8px_0_rgba(33,29,53,.07)] sm:p-8">
+        <div className="flex items-center gap-3 text-coral"><Bot className="size-8" /><p className="text-xs font-black tracking-[.16em]">NOT MORE TECH TO MASTER</p></div>
+        <p className="mt-5 text-[clamp(1.4rem,2.8vw,2.6rem)] font-black leading-tight text-ink">No new technical language.<br />No extra confidence gap.</p>
+      </article>
+      <article className="border-t-4 border-sun bg-purple p-6 text-white shadow-[0_8px_0_rgba(33,29,53,.12)] sm:p-8">
+        <div className="flex items-center gap-3 text-sun"><HeartHandshake className="size-8" /><p className="text-xs font-black tracking-[.16em]">MORE HUMAN CONNECTION</p></div>
+        <p className="mt-5 text-[clamp(1.4rem,2.8vw,2.6rem)] font-black leading-tight">People connect.<br />Skills and support move both ways.</p>
+      </article>
+    </div>
+
+    <p className="mt-7 text-[clamp(1.2rem,2.2vw,2rem)] font-black text-ink">AI stays in the background. <span className="text-purple">The neighbour comes forward.</span></p>
   </div>;
 }
 
@@ -234,7 +255,8 @@ export function PresentationDeck({ qrCode }: { qrCode: string }) {
   }, []);
   const scenes: Scene[] = [
     { shortTitle: "Inter-generation", duration: 30, note: "Start with the purpose. KAKI uses AI to help neighbours of every age discover one another, exchange useful skills and offer support. The value moves in both directions.", content: <IntergenerationScene onBegin={() => go(1)} /> },
-    { shortTitle: "The belief", duration: 30, note: "Open with the contrast. AI is powerful, but the moment that changes someone’s confidence is often another person sitting beside them. KAKI is built around that human truth.", content: <IntroScene onBegin={() => go(2)} /> },
+    { shortTitle: "People first", duration: 35, note: "This is the distinction. KAKI is not another technical product residents must master. More unfamiliar steps can widen the confidence gap. AI should handle complexity quietly, so people can focus on meeting, sharing and supporting one another.", content: <PeopleFirstScene /> },
+    { shortTitle: "The belief", duration: 30, note: "Open with the contrast. AI is powerful, but the moment that changes someone’s confidence is often another person sitting beside them. KAKI is built around that human truth.", content: <IntroScene onBegin={() => go(3)} /> },
     { shortTitle: "The moment", duration: 45, note: "Today I watched an organiser help an older neighbour understand ChatGPT and how she could use it. She did not lack ability. She needed a trusted person, familiar language and permission to try.", content: <WitnessScene /> },
     { shortTitle: "The opportunity", duration: 35, note: "That moment should not depend on chance. Across Pek Kio, small requests and useful skills exist side by side. KAKI makes those needs visible and approachable.", content: <OpportunityScene /> },
     { shortTitle: "The product", duration: 50, note: "A resident speaks naturally. AI converts the request into a clear, bounded and safer mission. A neighbour chooses to help. They chat, agree a public meeting point, check in and complete the moment together.", content: <ProductScene /> },
