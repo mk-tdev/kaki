@@ -31,7 +31,7 @@ export function MissionCard({ mission, compact = false, href }: { mission: Missi
       {compact ? null : <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted">{mission.summary}</p>}
       <div className="mt-4 grid gap-2 text-sm font-medium text-muted">
         <span className="flex items-center gap-2"><Clock3 className="size-4 text-purple" />{mission.durationMinutes} min · {formatMissionDate(mission.scheduledAt)}</span>
-        <span className="flex items-center gap-2"><MapPin className="size-4 text-purple" /><span className="truncate">{mission.location}</span></span>
+        <span className="flex min-w-0 items-center gap-2"><MapPin className="size-4 shrink-0 text-purple" /><span className="min-w-0 flex-1 truncate" title={mission.location}>{mission.location}</span></span>
         <span className="flex items-center gap-2"><Languages className="size-4 text-purple" />{mission.language}</span>
       </div>
       <div className="mt-5 flex items-center gap-3 border-t border-ink/8 pt-4">
