@@ -4,7 +4,7 @@ import { POST as translate } from "../../app/api/ai/translate/route.js";
 const mocks=vi.hoisted(()=>({claims:vi.fn(),quota:vi.fn(),audio:vi.fn(),text:vi.fn()}));
 vi.mock("../auth/server",()=>({createClient:async()=>({auth:{getClaims:mocks.claims}})}));
 vi.mock("./quota",()=>({takeAiQuota:mocks.quota}));
-vi.mock("openai",()=>({default:class { audio={transcriptions:{create:mocks.audio}};responses={create:mocks.text}; }}));
+vi.mock("openai",()=>({OpenAI:class { audio={transcriptions:{create:mocks.audio}};responses={create:mocks.text}; }}));
 beforeEach(()=>{
   vi.clearAllMocks();vi.stubEnv("OPENAI_API_KEY","test-only");
   mocks.claims.mockResolvedValue({data:{claims:{sub:"test-user"}}});mocks.quota.mockResolvedValue(true);
