@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 import { createClient } from "../../../../lib/auth/server.js";
 import { takeAiQuota } from "../../../../lib/ai/quota.js";
 import { audioTypes, limitedBody, MAX_AUDIO_BYTES } from "../../../../lib/ai/language.js";

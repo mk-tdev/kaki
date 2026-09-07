@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { createClient } from "../../../../../lib/auth/server.js";
 import { listMissions } from "../../../../../data/missions.js";

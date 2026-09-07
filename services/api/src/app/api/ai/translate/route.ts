@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 import { z } from "zod";
 import { createClient } from "../../../../lib/auth/server.js";
 import { takeAiQuota } from "../../../../lib/ai/quota.js";
