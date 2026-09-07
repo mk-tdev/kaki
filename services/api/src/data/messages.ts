@@ -1,7 +1,7 @@
 
-import { requireIdentity } from "../lib/auth/server";
-import { query, transaction } from "../lib/db/query";
-import type { CommunityMessage, Profile } from "../types/kaki";
+import { requireIdentity } from "../lib/auth/server.js";
+import { query, transaction } from "../lib/db/query.js";
+import type { CommunityMessage, Profile } from "../types/kaki.js";
 
 type MessageProfile = { id: string; full_name: string; role: Profile["role"]; age_band: string | null; spoken_languages: string[]; skills: string[]; bio: string; verified_at: string | null };
 type MessageRow = { id: string; mission_id: string; body: string; is_system: boolean; created_at: string; sender: MessageProfile };

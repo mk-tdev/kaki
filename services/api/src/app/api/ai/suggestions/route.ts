@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { generateAssistanceSuggestions } from "../../../../lib/ai/suggestions";
-import { createClient } from "../../../../lib/auth/server";
-import { takeAiQuota } from "../../../../lib/ai/quota";
+import { generateAssistanceSuggestions } from "../../../../lib/ai/suggestions.js";
+import { createClient } from "../../../../lib/auth/server.js";
+import { takeAiQuota } from "../../../../lib/ai/quota.js";
 
 const requestSchema = z.object({
   request: z.string().trim().min(3).max(1000),

@@ -1,7 +1,7 @@
 import OpenAI from "openai";
-import { createClient } from "../../../../lib/auth/server";
-import { takeAiQuota } from "../../../../lib/ai/quota";
-import { audioTypes, limitedBody, MAX_AUDIO_BYTES } from "../../../../lib/ai/language";
+import { createClient } from "../../../../lib/auth/server.js";
+import { takeAiQuota } from "../../../../lib/ai/quota.js";
+import { audioTypes, limitedBody, MAX_AUDIO_BYTES } from "../../../../lib/ai/language.js";
 
 export async function POST(request: Request) {
   try {

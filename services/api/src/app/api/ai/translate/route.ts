@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 import { z } from "zod";
-import { createClient } from "../../../../lib/auth/server";
-import { takeAiQuota } from "../../../../lib/ai/quota";
-import { limitedBody, supportedLanguages } from "../../../../lib/ai/language";
+import { createClient } from "../../../../lib/auth/server.js";
+import { takeAiQuota } from "../../../../lib/ai/quota.js";
+import { limitedBody, supportedLanguages } from "../../../../lib/ai/language.js";
 
 const schema=z.object({text:z.string().trim().min(1).max(1000),language:z.enum(supportedLanguages)});
 export async function POST(request:Request) {

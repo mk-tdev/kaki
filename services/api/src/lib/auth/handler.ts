@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { timingSafeEqual } from "node:crypto";
-import { pool } from "../db/pool";
-import { getIdentity, issueSession, revokeSession } from "./server";
-import { hashPassword, verifyPassword, tokenHash } from "./password";
+import { pool } from "../db/pool.js";
+import { getIdentity, issueSession, revokeSession } from "./server.js";
+import { hashPassword, verifyPassword, tokenHash } from "./password.js";
 const credentials = z.object({email:z.string().email().max(254).transform(s=>s.toLowerCase()),password:z.string().min(8).max(128)});
 const registration = credentials.extend({fullName:z.string().trim().min(2).max(80),inviteCode:z.string().max(200)});
 const json = (body: unknown, status = 200) => Response.json(body,{status,headers:{"Cache-Control":"no-store"}});

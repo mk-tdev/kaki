@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { listMissionMessages, sendMissionMessage } from "../../../../../data/messages";
+import { listMissionMessages, sendMissionMessage } from "../../../../../data/messages.js";
 
 const messageSchema = z.object({ body: z.string().trim().min(1).max(1200) });
 

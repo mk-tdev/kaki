@@ -1,7 +1,7 @@
 
-import { requireIdentity } from "../lib/auth/server";
-import { query } from "../lib/db/query";
-import type { CommunityNotification } from "../types/kaki";
+import { requireIdentity } from "../lib/auth/server.js";
+import { query } from "../lib/db/query.js";
+import type { CommunityNotification } from "../types/kaki.js";
 
 type NotificationRow = {
   id: string;

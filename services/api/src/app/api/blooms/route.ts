@@ -1,4 +1,4 @@
-import { listBlooms } from "../../../data/blooms";
+import { listBlooms } from "../../../data/blooms.js";
 
 export async function GET() {
   try {

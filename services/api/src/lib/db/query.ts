@@ -1,6 +1,6 @@
 import type { PoolClient, QueryResultRow } from "pg";
-import { pool } from "./pool";
-import { getIdentity } from "../auth/server";
+import { pool } from "./pool.js";
+import { getIdentity } from "../auth/server.js";
 
 // SET LOCAL and claims must be on the SAME checked-out connection as every query.
 // Runtime role is NOINHERIT and owns no tables; RLS remains the authority.

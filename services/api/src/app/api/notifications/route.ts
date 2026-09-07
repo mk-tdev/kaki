@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { listNotifications, markNotificationsRead } from "../../../data/notifications";
+import { listNotifications, markNotificationsRead } from "../../../data/notifications.js";
 
 const updateSchema = z.object({ ids: z.array(z.string().uuid()).max(50).optional() });
 

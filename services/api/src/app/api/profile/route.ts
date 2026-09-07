@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getCurrentProfile, updateCurrentProfile } from "../../../data/profile";
+import { getCurrentProfile, updateCurrentProfile } from "../../../data/profile.js";
 
 const profileUpdateSchema = z.object({
   fullName: z.string().trim().min(2).max(80),

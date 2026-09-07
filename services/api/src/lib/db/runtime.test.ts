@@ -5,14 +5,14 @@ const state=vi.hoisted(()=>({identity:null as {sub:string;is_anonymous:boolean}|
 vi.mock("server-only",()=>({}));
 vi.mock("../auth/server",()=>({getIdentity:async()=>state.identity,requireIdentity:async()=>{if(!state.identity)throw new Error("Unauthorized");return state.identity;}}));
 vi.mock("./pool",()=>({pool:()=>({query:state.run,connect:async()=>({query:state.run,release:()=>{}})})}));
-import { createMission, listMissions, updateMission } from "../../data/missions";
-import { getCurrentProfile, updateCurrentProfile } from "../../data/profile";
-import { listMissionMessages, sendMissionMessage } from "../../data/messages";
-import { listBlooms } from "../../data/blooms";
-import { listNotifications, markNotificationsRead } from "../../data/notifications";
-import { query } from "./query";
-import { POST as presence } from "../../app/api/missions/[id]/presence/route";
-import { GET as live } from "../../app/api/live/route";
+import { createMission, listMissions, updateMission } from "../../data/missions.js";
+import { getCurrentProfile, updateCurrentProfile } from "../../data/profile.js";
+import { listMissionMessages, sendMissionMessage } from "../../data/messages.js";
+import { listBlooms } from "../../data/blooms.js";
+import { listNotifications, markNotificationsRead } from "../../data/notifications.js";
+import { query } from "./query.js";
+import { POST as presence } from "../../app/api/missions/[id]/presence/route.js";
+import { GET as live } from "../../app/api/live/route.js";
 const db=new PGlite();
 const ids=["10000000-0000-4000-8000-000000000001","20000000-0000-4000-8000-000000000002","30000000-0000-4000-8000-000000000003"];
 function as(index:number|null){state.identity=index===null?null:{sub:ids[index],is_anonymous:true};}

@@ -1,7 +1,7 @@
-import { generateMissionDraft } from "../../../../lib/ai/mission";
-import { missionRequestSchema } from "../../../../lib/ai/schemas";
-import { createClient } from "../../../../lib/auth/server";
-import { takeAiQuota } from "../../../../lib/ai/quota";
+import { generateMissionDraft } from "../../../../lib/ai/mission.js";
+import { missionRequestSchema } from "../../../../lib/ai/schemas.js";
+import { createClient } from "../../../../lib/auth/server.js";
+import { takeAiQuota } from "../../../../lib/ai/quota.js";
 
 export async function POST(request: Request) {
   try {

@@ -1,7 +1,7 @@
-import { requireIdentity } from "../lib/auth/server";
-import { query, transaction } from "../lib/db/query";
-import type { MissionDraft } from "../lib/ai/schemas";
-import type { Mission, Profile } from "../types/kaki";
+import { requireIdentity } from "../lib/auth/server.js";
+import { query, transaction } from "../lib/db/query.js";
+import type { MissionDraft } from "../lib/ai/schemas.js";
+import type { Mission, Profile } from "../types/kaki.js";
 
 type DbProfile = { id: string; full_name: string; role: Profile["role"]; age_band: string | null; spoken_languages: string[]; skills: string[]; bio: string; verified_at: string | null };
 type DbMission = { id: string; title: string; original_request: string; category: Mission["category"]; status: Mission["status"]; language: string; duration_minutes: number; location_label: string; scheduled_at: string; summary: string; guide: string[]; accessibility_notes: string | null; safety_level: Mission["safetyLevel"]; created_at: string; requester: DbProfile; helper: DbProfile | null };

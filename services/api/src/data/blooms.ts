@@ -1,7 +1,7 @@
 
-import { requireIdentity } from "../lib/auth/server";
-import { query } from "../lib/db/query";
-import type { Bloom, MissionCategory } from "../types/kaki";
+import { requireIdentity } from "../lib/auth/server.js";
+import { query } from "../lib/db/query.js";
+import type { Bloom, MissionCategory } from "../types/kaki.js";
 
 type BloomRow = {
   id: string;

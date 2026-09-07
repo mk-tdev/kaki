@@ -1,5 +1,5 @@
-import { createMission, listMissions } from "../../../data/missions";
-import { missionCreateSchema } from "../../../lib/ai/schemas";
+import { createMission, listMissions } from "../../../data/missions.js";
+import { missionCreateSchema } from "../../../lib/ai/schemas.js";
 
 export async function GET() {
   try { return Response.json({ missions: await listMissions(), mode: "postgres" }); }

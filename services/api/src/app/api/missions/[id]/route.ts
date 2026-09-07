@@ -1,5 +1,5 @@
-import { updateMission } from "../../../../data/missions";
-import { missionUpdateSchema } from "../../../../lib/ai/schemas";
+import { updateMission } from "../../../../data/missions.js";
+import { missionUpdateSchema } from "../../../../lib/ai/schemas.js";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

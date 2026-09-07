@@ -1,4 +1,4 @@
-import { transaction } from "../../../lib/db/query";
+import { transaction } from "../../../lib/db/query.js";
 export async function GET() {
   try {
     const result = await transaction(async client => {

@@ -1,9 +1,9 @@
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
-import { createClient } from "../../../../../lib/auth/server";
-import { listMissions } from "../../../../../data/missions";
-import { takeAiQuota } from "../../../../../lib/ai/quota";
-import { matchInsightSchema } from "../../../../../lib/ai/match-schema";
+import { createClient } from "../../../../../lib/auth/server.js";
+import { listMissions } from "../../../../../data/missions.js";
+import { takeAiQuota } from "../../../../../lib/ai/quota.js";
+import { matchInsightSchema } from "../../../../../lib/ai/match-schema.js";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const authClient = await createClient();

@@ -1,8 +1,8 @@
 import { All, Controller, Get, Req, Res } from "@nestjs/common";
 import type { Request as ExpressRequest, Response as ExpressResponse } from "express";
 import { timingSafeEqual, createHash } from "node:crypto";
-import { ApiService } from "./api.service";
-import { authContext, type AuthContext } from "./lib/auth/server";
+import { ApiService } from "./api.service.js";
+import { authContext, type AuthContext } from "./lib/auth/server.js";
 const digest=(value:string)=>createHash('sha256').update(value).digest();
 export function validBridgeKey(value:string|undefined) {
  const expected=process.env.API_BRIDGE_KEY;

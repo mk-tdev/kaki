@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { randomBytes } from "node:crypto";
-import { pool } from "../db/pool";
-import { tokenHash } from "./password";
+import { pool } from "../db/pool.js";
+import { tokenHash } from "./password.js";
 export type Identity = { sub: string; is_anonymous: boolean };
 export type AuthContext = { token?: string; identity?: Promise<Identity|null>; issuedToken?: string };
 export const authContext = new AsyncLocalStorage<AuthContext>();

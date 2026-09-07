@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
-import { missionDraftSchema } from "./schemas";
-import { createLocalDraft } from "./local-draft";
+import { missionDraftSchema } from "./schemas.js";
+import { createLocalDraft } from "./local-draft.js";
 
 export async function generateMissionDraft(request: string, language: string) {
   if (!process.env.OPENAI_API_KEY) return { draft: createLocalDraft(request, language), mode: "local" as const };

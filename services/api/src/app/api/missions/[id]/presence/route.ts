@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { getIdentity } from "../../../../../lib/auth/server";
-import { query } from "../../../../../lib/db/query";
+import { getIdentity } from "../../../../../lib/auth/server.js";
+import { query } from "../../../../../lib/db/query.js";
 const schema = z.object({ action: z.enum(["on_way", "check_in", "consent"]), consentToShare: z.boolean().optional() });
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await getIdentity()) return Response.json({error:"Unauthorized"},{status:401});

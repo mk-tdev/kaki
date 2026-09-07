@@ -1,7 +1,7 @@
 
-import { requireIdentity } from "../lib/auth/server";
-import { query } from "../lib/db/query";
-import type { Profile, UserRole } from "../types/kaki";
+import { requireIdentity } from "../lib/auth/server.js";
+import { query } from "../lib/db/query.js";
+import type { Profile, UserRole } from "../types/kaki.js";
 
 const profileSelect = "id,full_name,role,onboarded_at,age_band,spoken_languages,skills,bio,verified_at";
 

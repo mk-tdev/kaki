@@ -1,4 +1,4 @@
-import type { MissionDraft } from "./schemas";
+import type { MissionDraft } from "./schemas.js";
 
 const sensitivePattern = /suicide|self[- ]?harm|kill myself|abuse|violence|emergency|chest pain|cannot breathe|medical diagnosis|money transfer|bank transfer|password|otp|private.home|my home|electrical wiring|mains|live wire/i;
 

@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { POST as transcribe } from "../../app/api/ai/transcribe/route";
-import { POST as translate } from "../../app/api/ai/translate/route";
+import { POST as transcribe } from "../../app/api/ai/transcribe/route.js";
+import { POST as translate } from "../../app/api/ai/translate/route.js";
 const mocks=vi.hoisted(()=>({claims:vi.fn(),quota:vi.fn(),audio:vi.fn(),text:vi.fn()}));
 vi.mock("../auth/server",()=>({createClient:async()=>({auth:{getClaims:mocks.claims}})}));
 vi.mock("./quota",()=>({takeAiQuota:mocks.quota}));
