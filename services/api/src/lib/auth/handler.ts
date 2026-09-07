@@ -7,7 +7,7 @@ const credentials = z.object({email:z.string().email().max(254).transform(s=>s.t
 const registration = credentials.extend({fullName:z.string().trim().min(2).max(80),inviteCode:z.string().max(200)});
 const json = (body: unknown, status = 200) => Response.json(body,{status,headers:{"Cache-Control":"no-store"}});
 async function allowed(bucket: string, limit: number) {
-  const result=await pool().query<{allowed:boolean}>("select auth.take_rate_limit($1,$2) as allowed",[bucket,limit]);
+  const result=await pool().query<{allowed:boolean}>("select kaki_auth.take_rate_limit($1,$2) as allowed",[bucket,limit]);
   return result.rows[0].allowed;
 }
 export async function handleAuth(request: Request, action: string) {
@@ -18,7 +18,7 @@ export async function handleAuth(request: Request, action: string) {
     const network = request.headers.get("x-kaki-client-ip") || "unknown";
     if (!await allowed(`network:${tokenHash(network)}`,300) || !await allowed("auth-global",2000)) return json({error:"Too many attempts. Try again later."},429);
     if (action === "guest") {
-      const result = await pool().query<{id:string}>("select auth.register(null,null,null,true) as id");
+      const result = await pool().query<{id:string}>("select kaki_auth.register(null,null,null,true) as id");
       await issueSession(result.rows[0].id);
       return json({ok:true});
     }
@@ -36,7 +36,7 @@ export async function handleAuth(request: Request, action: string) {
       if (!expected || !timingSafeEqual(Buffer.from(tokenHash(expected)),Buffer.from(tokenHash(supplied)))) return json({error:"Ask the organiser for a valid invitation code."},403);
       if (!await allowed("registrations",100)) return json({error:"Account registration is busy. Try later."},429);
       const password=await hashPassword(parsed.data.password);
-      const result=await pool().query<{id:string}>("select auth.register($1,$2,$3,false) as id",[parsed.data.email,password,parsed.data.fullName]);
+      const result=await pool().query<{id:string}>("select kaki_auth.register($1,$2,$3,false) as id",[parsed.data.email,password,parsed.data.fullName]);
       await issueSession(result.rows[0].id);
       return json({ok:true});
     }
@@ -44,7 +44,7 @@ export async function handleAuth(request: Request, action: string) {
       const parsed=credentials.safeParse(body);
       if (!parsed.success) return json({error:"Invalid email or password."},400);
       if (!await allowed(`login:${tokenHash(parsed.data.email)}`,20)) return json({error:"Too many attempts. Try again later."},429);
-      const result=await pool().query<{id:string;password_hash:string}>("select * from auth.account($1)",[parsed.data.email]);
+      const result=await pool().query<{id:string;password_hash:string}>("select * from kaki_auth.account($1)",[parsed.data.email]);
       const account=result.rows[0];
       // Equal password work even for an unknown account.
       const fallback=`scrypt$00000000000000000000000000000000$${"00".repeat(64)}`;
